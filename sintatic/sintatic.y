@@ -115,7 +115,7 @@ stmt:
         | return_stmt
         | input_output_expr 
         | expr_stmt 
-        | set_stmt 
+        /* | set_stmt  */
         | var_declaration 
         | assign SEMICOLON
 ;
