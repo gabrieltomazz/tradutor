@@ -115,8 +115,9 @@ stmt:
         | return_stmt
         | input_output_expr 
         | expr_stmt 
-        /* | set_stmt  */
+        | set_stmt 
         | var_declaration 
+        /* | is_set_expr SEMICOLON */
         | assign SEMICOLON
 ;
 
@@ -148,8 +149,13 @@ simple_complex_block_stmt:
 
 return_stmt:
         CMD_RETURN SEMICOLON
-        | CMD_RETURN expr SEMICOLON
+        | CMD_RETURN expr SEMICOLON  
 ;
+
+set_stmt: 
+        CMD_FORALL OPEN_PAREN var IN_OP func_expr CLS_PAREN simple_complex_block_stmt 
+        | CMD_FORALL OPEN_PAREN var IN_OP var CLS_PAREN simple_complex_block_stmt
+        | is_set_expr SEMICOLON
 
 expr_stmt:
         expr SEMICOLON
@@ -168,8 +174,11 @@ func_expr:
         ADD_FUNC OPEN_PAREN func_in_expr CLS_PAREN {printf("add \n");}
         | REMOVE_FUNC OPEN_PAREN func_in_expr CLS_PAREN {printf("remove \n");}
         | EXIST_FUNC OPEN_PAREN func_in_expr CLS_PAREN {printf("exist)\n");}
-        /* | IS_SET_FUNC OPEN_PAREN term CLS_PAREN {printf("is_set(term) \n");} */
 ;
+
+is_set_expr :
+        IS_SET_FUNC OPEN_PAREN var CLS_PAREN 
+        | IS_SET_FUNC OPEN_PAREN func_expr CLS_PAREN 
 
 func_in_expr:
         op_or_expr IN_OP var 
@@ -214,6 +223,7 @@ term:
         var {printf("var \n");}
         | num_tipos
         | OPEN_PAREN expr CLS_PAREN {printf("( operationalExp )\n");}
+        /* | is_set_expr */
 ;
 
 logical_ops: 
