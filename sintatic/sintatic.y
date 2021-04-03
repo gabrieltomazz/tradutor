@@ -10,16 +10,28 @@
   #include <stdio.h>
   #include <stdlib.h>
 
-  extern int yylex(void);
-  extern int yyerror(const char *s);
+  #include "tree.h"
 
+  extern int yylex();
+  extern int yylex_destroy();
+  extern void yyerror(const char *);
+  
+  extern FILE *yyin;
+  int error = 0;
+  char tipo[100];
+
+  NodoArvore* raiz;
 %}
 
 %union
 {
+  struct Token {
+    int column, line;
+    char *body;
+  } token;
   char	*sval;
 
-  struct Tree* no;
+  struct NodoArvore* no;
 };
 
 %type <no> program
@@ -55,56 +67,81 @@
 
 
 %token <sval> ID
-%token MAIN EMPTY
-%token TYPE_INT TYPE_FLOAT TYPE_ELEM  TYPE_SET   
-%token ADD_OP MULT_OP
-%token CMD_IF CMD_FOR CMD_FORALL
-%token GT_OP LT_OP LTE_OP GTE_OP NEQ_OP EQUAL_OP
-%token ADD_FUNC IS_SET_FUNC REMOVE_FUNC EXIST_FUNC IN_OP 
-%token OP_OR OP_AND OP_NEG
-%token ATRIBUTION CMD_WRITE CMD_WRITELN
-%token CMD_READ CMD_RETURN INT FLOAT STRING CHARACTER SEMICOLON COMMA OPEN_PAREN CLS_PAREN OP_CUR_BRACKET CLS_CUR_BRACKET
+%token <token> MAIN EMPTY
+%token <token> TYPE_INT TYPE_FLOAT TYPE_ELEM  TYPE_SET   
+%token <token> ADD_OP MULT_OP
+%token <token> CMD_IF CMD_FOR CMD_FORALL
+%token <token> GT_OP LT_OP LTE_OP GTE_OP NEQ_OP EQUAL_OP
+%token <token> ADD_FUNC IS_SET_FUNC REMOVE_FUNC EXIST_FUNC IN_OP 
+%token <token> OP_OR OP_AND OP_NEG
+%token <token> ATRIBUTION CMD_WRITE CMD_WRITELN
+%token <token> CMD_READ CMD_RETURN INT FLOAT STRING SEMICOLON COMMA OPEN_PAREN CLS_PAREN OP_CUR_BRACKET CLS_CUR_BRACKET
 
 %%
 
 program: 
-        list_declaration 
+        list_declaration {
+            $$ = criarNodo("program");
+            $$->filho = $1;
+            raiz = $$;
+        }
 ;
 
 list_declaration: 
-        list_declaration main_declaration
-        | main_declaration
+        list_declaration main_declaration {
+            $1->proximo = $2;
+        }
+        | main_declaration 
 ;
 
 main_declaration: 
-        func_declaration
-        | var_declaration
+        func_declaration 
+        | var_declaration 
         | error {}
 ;
 
 var_declaration: 
-        tipos var SEMICOLON 
+        tipos var SEMICOLON {
+            $$ = criarNodo("var_declaration");
+            $$->filho = $1; 
+            $1->proximo = $2;  
+        }
 ;
 
 func_declaration: 
-        tipos var OPEN_PAREN list_args CLS_PAREN blockStmt
-        /* | tipos var OPEN_PAREN CLS_PAREN blockStmt */
-        | tipos MAIN OPEN_PAREN list_args CLS_PAREN blockStmt
+        tipos var OPEN_PAREN list_args CLS_PAREN blockStmt {
+            $$ = criarNodo("func_declaration");   
+            $$->filho = $1;
+            $1->proximo = $2;
+            $2->proximo = $4;
+            $4->proximo = $6;
+        }
+        | tipos MAIN OPEN_PAREN list_args[args] CLS_PAREN blockStmt[block] {
+            $$ = criarNodo("func_declaration_main");   
+            $$->filho = $tipos;
+            $tipos->proximo = $args;
+            $args->proximo = $block;
+        }
 ;
 
 list_args:
         tipos var COMMA list_args
         | tipos var
-        | %empty {printf(" null args \n");}
+        | %empty 
 ;
 
 blockStmt: 
-        OP_CUR_BRACKET list_statements CLS_CUR_BRACKET {printf("{ }\n");}
+        OP_CUR_BRACKET list_statements CLS_CUR_BRACKET {
+                $$ = $2;
+        }
         | error {}
 ;
 
 list_statements: 
-        stmt list_statements {printf("statements, statement\n");}
+        stmt list_statements {
+               $$ = $1;
+               $1->proximo = $2; 
+        }
         | stmt
         /* | %empty {printf("empty statement\n");} */
 ;
@@ -122,19 +159,31 @@ stmt:
 ;
 
 input_output_expr: 
-        CMD_WRITE OPEN_PAREN str_expr CLS_PAREN SEMICOLON {printf("IO: write \n");}
-        | CMD_WRITE OPEN_PAREN expr CLS_PAREN SEMICOLON {printf("IO: write \n");}
-        | CMD_WRITELN OPEN_PAREN str_expr CLS_PAREN SEMICOLON {printf("IO: writeln \n");}
-        | CMD_WRITELN OPEN_PAREN expr CLS_PAREN SEMICOLON {printf("IO: writeln \n");}
-        | CMD_READ OPEN_PAREN var CLS_PAREN SEMICOLON {printf("IO: read \n");}
+        CMD_WRITE OPEN_PAREN str_expr CLS_PAREN SEMICOLON {
+                $$ = criarNodo("CMD_WRITE_STR");
+        }
+        | CMD_WRITE OPEN_PAREN expr CLS_PAREN SEMICOLON {
+                $$ = criarNodo("CMD_WRITE_EXPR");
+        }
+        | CMD_WRITELN OPEN_PAREN str_expr CLS_PAREN SEMICOLON {
+                $$ = criarNodo("CMD_WRITELN_STR");
+        }
+        | CMD_WRITELN OPEN_PAREN expr CLS_PAREN SEMICOLON {
+                $$ = criarNodo("CMD_WRITELN_EXPR");
+        }
+        | CMD_READ OPEN_PAREN var CLS_PAREN SEMICOLON {
+                $$ = criarNodo("CMD_READ_VAR");
+        }
 ;
 
 iteration_expr:
-        CMD_FOR OPEN_PAREN { printf(" for( "); } assign SEMICOLON expr SEMICOLON assign CLS_PAREN blockStmt
+        CMD_FOR OPEN_PAREN assign SEMICOLON expr SEMICOLON assign CLS_PAREN blockStmt
 ;
 
 condition_expr: 
-        CMD_IF OPEN_PAREN { printf(" if( "); } expr CLS_PAREN { printf(" ) "); } block_cond 
+        CMD_IF OPEN_PAREN expr CLS_PAREN  block_cond {
+                $$ = $3;
+        }
 ;
 
 block_cond:
@@ -171,9 +220,9 @@ assign:
 ;
 
 func_expr: 
-        ADD_FUNC OPEN_PAREN func_in_expr CLS_PAREN {printf("add \n");}
-        | REMOVE_FUNC OPEN_PAREN func_in_expr CLS_PAREN {printf("remove \n");}
-        | EXIST_FUNC OPEN_PAREN func_in_expr CLS_PAREN {printf("exist)\n");}
+        ADD_FUNC OPEN_PAREN func_in_expr CLS_PAREN 
+        | REMOVE_FUNC OPEN_PAREN func_in_expr CLS_PAREN 
+        | EXIST_FUNC OPEN_PAREN func_in_expr CLS_PAREN
 ;
 
 is_set_expr :
@@ -186,18 +235,26 @@ func_in_expr:
 ;
 
 op_or_expr: 
-        op_or_expr OP_OR op_and_expr
-        | op_and_expr
+        op_or_expr OP_OR op_and_expr {
+
+        }
+        | op_and_expr 
         | func_in_expr
 ;
 
 op_and_expr:
-        op_and_expr OP_AND logical_expr
+        op_and_expr OP_AND logical_expr {
+
+        }
         | logical_expr 
 ;
 
 logical_expr:
-       logical_expr logical_ops arithmetic_expr  
+       logical_expr logical_ops arithmetic_expr {
+             $$ = $2;
+             $2->filho = $1; 
+             $1->proximo = $3; 
+       } 
        | arithmetic_expr
 ;
 
@@ -220,19 +277,31 @@ first_term:
 ; 
 
 term: 
-        var {printf("var \n");}
+        var 
         | num_tipos
-        | OPEN_PAREN expr CLS_PAREN {printf("( operationalExp )\n");}
+        | OPEN_PAREN expr CLS_PAREN 
         /* | is_set_expr */
 ;
 
 logical_ops: 
-         LT_OP  { printf(" < \n");}
-        |  LTE_OP  { printf(" <= \n");}  
-        |  GT_OP  { printf(" > \n");}  
-        |  GTE_OP  { printf(" >= \n");}
-        |  NEQ_OP  { printf(" != \n");}
-        |  EQUAL_OP  { printf(" == \n");}
+        LT_OP {
+                $$ = criarNodo("LT_OP");
+        }
+        |  LTE_OP {
+                $$ = criarNodo("LTE_OP");
+        }  
+        |  GT_OP {
+                $$ = criarNodo("GT_OP");
+        } 
+        |  GTE_OP {
+                $$ = criarNodo("GTE_OP");
+        }
+        |  NEQ_OP {
+                $$ = criarNodo("NEQ_OP");
+        }
+        |  EQUAL_OP {
+                $$ = criarNodo("EQUAL_OP");
+        }
 ;
 
 str_expr:
@@ -245,18 +314,59 @@ list_expr:
 ;
 
 var:
-      ID[strg] { printf("%s", $strg);} 
+      ID {
+              $$ = criarNodo($1);
+       } 
 ;
 
 num_tipos: 
-        FLOAT {printf("float value\n");}
-        | INT {printf("int value\n");}
-        | EMPTY {printf("empty value\n");}
+        FLOAT 
+        | INT 
+        | EMPTY
 ;
 
 tipos: 
-        TYPE_INT     { printf("INT ");}
-        | TYPE_FLOAT { printf("FLOAT "); }
-        | TYPE_SET   { printf("SET "); }
-        | TYPE_ELEM  { printf("ELEM "); }
+        TYPE_INT {
+             $$ = criarNodo("TYPE_INT");
+        }    
+        | TYPE_FLOAT {
+              $$ = criarNodo("TYPE_FLOAT");
+        }
+        | TYPE_SET  {
+              $$ = criarNodo("TYPE_SET");
+        } 
+        | TYPE_ELEM {
+             $$ = criarNodo("TYPE_ELEM");
+        }
 ;
+%%
+
+
+void yyerror(const char* msg) {
+  fprintf (stderr, "%-15s %d:%-3d - %s\n", "SYNTAX ERROR", yylval.token.line, yylval.token.column, msg);
+  error++;
+}
+/* int yyerror(char *errormsg)
+{
+     fprintf(stderr, "%s at line:%d, column:%d,\n", errormsg, line, column);
+     return 0;
+} */
+
+int main(int argc, char ** argv) {
+    
+    /* escopo.idx = -1;
+    escopo.proximo = -1; */
+    
+    yyparse();
+
+
+    if(error) return 0;
+
+    /* printTabela(indiceTabela); */
+    printArvore(raiz, 0);
+
+    freeArvore(raiz);
+
+    yylex_destroy();
+    return 0;
+}

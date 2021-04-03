@@ -90,13 +90,12 @@ extern int yydebug;
     INT = 291,                     /* INT  */
     FLOAT = 292,                   /* FLOAT  */
     STRING = 293,                  /* STRING  */
-    CHARACTER = 294,               /* CHARACTER  */
-    SEMICOLON = 295,               /* SEMICOLON  */
-    COMMA = 296,                   /* COMMA  */
-    OPEN_PAREN = 297,              /* OPEN_PAREN  */
-    CLS_PAREN = 298,               /* CLS_PAREN  */
-    OP_CUR_BRACKET = 299,          /* OP_CUR_BRACKET  */
-    CLS_CUR_BRACKET = 300          /* CLS_CUR_BRACKET  */
+    SEMICOLON = 294,               /* SEMICOLON  */
+    COMMA = 295,                   /* COMMA  */
+    OPEN_PAREN = 296,              /* OPEN_PAREN  */
+    CLS_PAREN = 297,               /* CLS_PAREN  */
+    OP_CUR_BRACKET = 298,          /* OP_CUR_BRACKET  */
+    CLS_CUR_BRACKET = 299          /* CLS_CUR_BRACKET  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -105,13 +104,17 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 19 "sintatic/sintatic.y"
+#line 27 "sintatic/sintatic.y"
 
+  struct Token {
+    int column, line;
+    char *body;
+  } token;
   char	*sval;
 
-  struct Tree* no;
+  struct NodoArvore* no;
 
-#line 115 "sintatic.tab.h"
+#line 118 "sintatic.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

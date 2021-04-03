@@ -3,24 +3,24 @@
   #include <math.h>
   #include <string.h>
   #include "sintatic.tab.h"
-  int yyerror(char *errormsg);
-  int yyparse();
+//   int yyerror(char *errormsg);
+//   int yyparse();
 
   int line = 1;
   int column = 0;
 %}
 
 INT [0-9]+ 
-FLOAT [0-9]+|-?[0-9]+\.[0-9]+
+FLOAT [0-9]+|[0-9]+\.[0-9]+
 MAIN main
 EMPTY empty
 ADD_OP "+"|"-" 
 MULT_OP "*"|"/"
-OP_OR  &&
-OP_AND "||"
+OP_OR  "||" 
+OP_AND &&
 OP_NEG !
 STRING \"[^\"]*\"|'[^']*'
-CHARACTER ['].[']|[']\\n[']|[']\\r[']|[']\\t[']
+/* CHARACTER ['].[']|[']\\n[']|[']\\r[']|[']\\t['] */
 ADD_FUNC add
 IS_SET_FUNC is_set
 REMOVE_FUNC remove
@@ -55,7 +55,7 @@ CLS_CUR_BRACKET "}"
 %%
 
 "//".*\n            {line++;column=0;}
-\n		            {line++;column=0;}
+\n		              {line++;column=0;}
 {MAIN}              {column += yyleng; return (MAIN);}
 {EMPTY}             {column += yyleng; return (EMPTY);}
 {TYPE_INT}          {column += yyleng; return (TYPE_INT);}
@@ -81,19 +81,18 @@ CLS_CUR_BRACKET "}"
 {ATRIBUTION}        {column += yyleng; return (ATRIBUTION);}
 {CMD_IF}            {column += yyleng; return (CMD_IF) ;}
 {CMD_ELSE}          {column += yyleng; return (CMD_ELSE) ;}
-{CMD_FOR}		     {column += yyleng; return (CMD_FOR) ;}
-{CMD_FORALL}		{column += yyleng; return (CMD_FORALL) ;}
-{CMD_WRITE}	     {column += yyleng; return (CMD_WRITE) ;}
-{CMD_WRITELN}		{column += yyleng; return (CMD_WRITELN) ;}
-{CMD_READ}		{column += yyleng; return (CMD_READ) ;}
-{CMD_RETURN}		{column += yyleng; return (CMD_RETURN) ;}
+{CMD_FOR}		        {column += yyleng; return (CMD_FOR) ;}
+{CMD_FORALL}		    {column += yyleng; return (CMD_FORALL) ;}
+{CMD_WRITE}	        {column += yyleng; return (CMD_WRITE) ;}
+{CMD_WRITELN}		    {column += yyleng; return (CMD_WRITELN) ;}
+{CMD_READ}		      {column += yyleng; return (CMD_READ) ;}
+{CMD_RETURN}		    {column += yyleng; return (CMD_RETURN) ;}
 {ID}                {column += yyleng; yylval.sval = malloc(strlen(yytext));
                       strncpy(yylval.sval, yytext, strlen(yytext));
                       return(ID); }
 {INT}               {column += yyleng; return (INT) ;}
 {FLOAT}             {column += yyleng; return (FLOAT) ;}
-{STRING}			{column += yyleng; return (STRING) ;}
-{CHARACTER}		{column += yyleng; return (CHARACTER) ;}
+{STRING}			      {column += yyleng; return (STRING) ;}
 {SEMICOLON}         {column += yyleng; return (SEMICOLON) ;}
 {COMMA}             {column += yyleng; return (COMMA) ;}
 {OPEN_PAREN}        {column += yyleng; return (OPEN_PAREN) ;}
@@ -105,22 +104,16 @@ CLS_CUR_BRACKET "}"
 .	                {printf("l:%d col:%d INVALID TOKEN: %s\n", line, column, yytext); column += yyleng;}
 
 %%
-int main()
-{
+/* int main()
+{ */
      /* yyin = fopen(argv[1], "r"); */
-     yyparse();
+     /* yyparse(); */
      /* fclose(yyin); */
-     yylex_destroy();
-     return 1;
-}
+     /* yylex_destroy();
+     return 1; */
+/* } */
 
 /* int yywrap(void)
 {
      return 0;
 } */
-
-int yyerror(char *errormsg)
-{
-     fprintf(stderr, "%s at line:%d, column:%d,\n", errormsg, line, column);
-     return 0;
-}
