@@ -3,62 +3,70 @@
 #include <stdlib.h>
 #include <string.h>
 
-NodoArvore* criarNodo(char *val) {
-  NodoArvore* novoNodo = (NodoArvore*) malloc(sizeof(NodoArvore));
-  novoNodo->val = strdup(val);
-  novoNodo->proximo = NULL;
-  novoNodo->filho = NULL;
-  // novoNodo->simbolo = NULL;
-  return novoNodo;
+TreeNodes* buildNode(char *value) {
+  
+  TreeNodes* treeBranch = (TreeNodes*) malloc(sizeof(TreeNodes));
+  
+  treeBranch->value = strdup(value);
+  treeBranch->brotherNode = NULL;
+  treeBranch->childNode = NULL;
+  // treeBranch->simbolo = NULL;
+  
+  return treeBranch;
 }
 
-void freeArvore(NodoArvore *nodo) {
-  if(!nodo) {
+void clearTree(TreeNodes *branch) {
+  if(!branch) {
     return;
   }
-  // if(nodo->simbolo) {
-  //   free(nodo->simbolo->body);
-  //   free(nodo->simbolo);
+  // if(branch->simbolo) {
+  //   free(branch->simbolo->body);
+  //   free(branch->simbolo);
   // }
   
-  if(nodo->proximo){
-    freeArvore(nodo->proximo);
+  if(branch->brotherNode){
+    clearTree(branch->brotherNode);
   }
-  if(nodo->filho) {
-    freeArvore(nodo->filho);
+  if(branch->childNode) {
+    clearTree(branch->childNode);
   }
-  free(nodo->val);
-  free(nodo);
+  free(branch->value);
+  free(branch);
 
 }
 
-void printArvore(NodoArvore *nodo, int profundidade) {
-  if (!nodo) {
+void showTree(TreeNodes *branch, int depth) {
+  if (!branch) {
     return;
   }
 
-  if(profundidade == 0){
-    printf("\n-------------------ARVORE SINTATICA-------------------\n");
-    printf("%s\n", nodo->val);
+  if(depth == 0) {
+    printf("\n < ------------------- Starting -> Syntactic Tree ------------------- >\n");
+    printf(" <%s> \n", branch->value);
 
   } else {
-    for(int i=0; i<profundidade; i++) printf(" | ");
-    printf("%s", nodo->val);
+
+    for(int i=0; i<depth; i++){
+      printf(" | ");
+    }
+    printf(" <%s>", branch->value);
   }
 
   
-  // if(nodo->simbolo) {
-  //   printf(" [ simbolo -> %s ]", nodo->simbolo->body);
+  // if(branch->simbolo) {
+  //   printf(" [ simbolo -> %s ]", branch->simbolo->body);
   // }
 
-  if(profundidade>0) printf("\n");
-  if(nodo->filho){
-    printArvore(nodo->filho, profundidade+1);
+  if(depth > 0) {
+    printf("\n");
+  } 
+
+  if(branch->childNode) {
+    showTree(branch->childNode, depth+1);
   }
 
-
-  if(nodo->proximo) {
-    printArvore(nodo->proximo, profundidade);
+  if(branch->brotherNode) {
+    showTree(branch->brotherNode, depth);
   }
 
 }

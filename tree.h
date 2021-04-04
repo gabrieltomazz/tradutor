@@ -1,17 +1,17 @@
 #ifndef TREE
 #define TREE
 
-typedef struct NodoArvore NodoArvore;
+typedef struct TreeNodes TreeNodes;
 
-struct NodoArvore {
-  struct NodoArvore* proximo;
-  struct NodoArvore* filho;
+struct TreeNodes {
+  struct TreeNodes* brotherNode; // proximo
+  struct TreeNodes* childNode; // filho
   // Simbolo* simbolo;
-  char* val;
+  char* value;
 };
 
-NodoArvore* criarNodo(char*);
-void printArvore(NodoArvore*, int);
-void freeArvore(NodoArvore *);
+TreeNodes* buildNode(char*);
+void showTree(TreeNodes*, int);
+void clearTree(TreeNodes *);
 
 #endif

@@ -57,39 +57,39 @@ extern int yydebug;
     THEN = 258,                    /* THEN  */
     CMD_ELSE = 259,                /* CMD_ELSE  */
     ID = 260,                      /* ID  */
-    MAIN = 261,                    /* MAIN  */
-    EMPTY = 262,                   /* EMPTY  */
-    TYPE_INT = 263,                /* TYPE_INT  */
-    TYPE_FLOAT = 264,              /* TYPE_FLOAT  */
-    TYPE_ELEM = 265,               /* TYPE_ELEM  */
-    TYPE_SET = 266,                /* TYPE_SET  */
-    ADD_OP = 267,                  /* ADD_OP  */
-    MULT_OP = 268,                 /* MULT_OP  */
-    CMD_IF = 269,                  /* CMD_IF  */
-    CMD_FOR = 270,                 /* CMD_FOR  */
-    CMD_FORALL = 271,              /* CMD_FORALL  */
-    GT_OP = 272,                   /* GT_OP  */
-    LT_OP = 273,                   /* LT_OP  */
-    LTE_OP = 274,                  /* LTE_OP  */
-    GTE_OP = 275,                  /* GTE_OP  */
-    NEQ_OP = 276,                  /* NEQ_OP  */
-    EQUAL_OP = 277,                /* EQUAL_OP  */
-    ADD_FUNC = 278,                /* ADD_FUNC  */
-    IS_SET_FUNC = 279,             /* IS_SET_FUNC  */
-    REMOVE_FUNC = 280,             /* REMOVE_FUNC  */
-    EXIST_FUNC = 281,              /* EXIST_FUNC  */
-    IN_OP = 282,                   /* IN_OP  */
-    OP_OR = 283,                   /* OP_OR  */
-    OP_AND = 284,                  /* OP_AND  */
-    OP_NEG = 285,                  /* OP_NEG  */
-    ATRIBUTION = 286,              /* ATRIBUTION  */
-    CMD_WRITE = 287,               /* CMD_WRITE  */
-    CMD_WRITELN = 288,             /* CMD_WRITELN  */
-    CMD_READ = 289,                /* CMD_READ  */
-    CMD_RETURN = 290,              /* CMD_RETURN  */
-    INT = 291,                     /* INT  */
-    FLOAT = 292,                   /* FLOAT  */
-    STRING = 293,                  /* STRING  */
+    INT = 261,                     /* INT  */
+    FLOAT = 262,                   /* FLOAT  */
+    ADD_OP = 263,                  /* ADD_OP  */
+    MULT_OP = 264,                 /* MULT_OP  */
+    STRING = 265,                  /* STRING  */
+    MAIN = 266,                    /* MAIN  */
+    EMPTY = 267,                   /* EMPTY  */
+    TYPE_INT = 268,                /* TYPE_INT  */
+    TYPE_FLOAT = 269,              /* TYPE_FLOAT  */
+    TYPE_ELEM = 270,               /* TYPE_ELEM  */
+    TYPE_SET = 271,                /* TYPE_SET  */
+    CMD_IF = 272,                  /* CMD_IF  */
+    CMD_FOR = 273,                 /* CMD_FOR  */
+    CMD_FORALL = 274,              /* CMD_FORALL  */
+    GT_OP = 275,                   /* GT_OP  */
+    LT_OP = 276,                   /* LT_OP  */
+    LTE_OP = 277,                  /* LTE_OP  */
+    GTE_OP = 278,                  /* GTE_OP  */
+    NEQ_OP = 279,                  /* NEQ_OP  */
+    EQUAL_OP = 280,                /* EQUAL_OP  */
+    ADD_FUNC = 281,                /* ADD_FUNC  */
+    IS_SET_FUNC = 282,             /* IS_SET_FUNC  */
+    REMOVE_FUNC = 283,             /* REMOVE_FUNC  */
+    EXIST_FUNC = 284,              /* EXIST_FUNC  */
+    IN_OP = 285,                   /* IN_OP  */
+    OP_OR = 286,                   /* OP_OR  */
+    OP_AND = 287,                  /* OP_AND  */
+    OP_NEG = 288,                  /* OP_NEG  */
+    ATRIBUTION = 289,              /* ATRIBUTION  */
+    CMD_WRITE = 290,               /* CMD_WRITE  */
+    CMD_WRITELN = 291,             /* CMD_WRITELN  */
+    CMD_READ = 292,                /* CMD_READ  */
+    CMD_RETURN = 293,              /* CMD_RETURN  */
     SEMICOLON = 294,               /* SEMICOLON  */
     COMMA = 295,                   /* COMMA  */
     OPEN_PAREN = 296,              /* OPEN_PAREN  */
@@ -112,7 +112,7 @@ union YYSTYPE
   } token;
   char	*sval;
 
-  struct NodoArvore* no;
+  struct TreeNodes* typeNode;
 
 #line 118 "sintatic.tab.h"
 

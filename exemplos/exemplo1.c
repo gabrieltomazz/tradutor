@@ -1,8 +1,10 @@
 int main(int a){
-    for (i = 1; i < 4; i = 5) 
-    {
-        if(a > b){
-            write("a");
-        }
+    int a; 
+    a = -5;
+
+    if(a > b || a >= c){
+        a = b + 2;
     }
+
+    return;
 }

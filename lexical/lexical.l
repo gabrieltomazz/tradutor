@@ -68,8 +68,16 @@ CLS_CUR_BRACKET "}"
 {LTE_OP}            {column += yyleng; return (LTE_OP);}
 {NEQ_OP}            {column += yyleng; return (NEQ_OP);}
 {EQUAL_OP}          {column += yyleng; return (EQUAL_OP);}
-{ADD_OP}            {column += yyleng; return (ADD_OP);}
-{MULT_OP}           {column += yyleng; return (MULT_OP);}
+{ADD_OP}            {column += yyleng; 
+                      yylval.sval = malloc(strlen(yytext));
+                      strncpy(yylval.sval, yytext, strlen(yytext));
+                      return(ADD_OP); 
+                    }     
+{MULT_OP}           {column += yyleng; 
+                      yylval.sval = malloc(strlen(yytext));
+                      strncpy(yylval.sval, yytext, strlen(yytext));
+                      return(MULT_OP); 
+                    }
 {OP_OR}             {column += yyleng; return (OP_OR);}
 {OP_AND}            {column += yyleng; return (OP_AND);}
 {OP_NEG}            {column += yyleng; return (OP_NEG);}
@@ -87,12 +95,24 @@ CLS_CUR_BRACKET "}"
 {CMD_WRITELN}		    {column += yyleng; return (CMD_WRITELN) ;}
 {CMD_READ}		      {column += yyleng; return (CMD_READ) ;}
 {CMD_RETURN}		    {column += yyleng; return (CMD_RETURN) ;}
-{ID}                {column += yyleng; yylval.sval = malloc(strlen(yytext));
+{ID}                {column += yyleng; 
+                      yylval.sval = malloc(strlen(yytext));
                       strncpy(yylval.sval, yytext, strlen(yytext));
-                      return(ID); }
-{INT}               {column += yyleng; return (INT) ;}
-{FLOAT}             {column += yyleng; return (FLOAT) ;}
-{STRING}			      {column += yyleng; return (STRING) ;}
+                      return(ID); 
+                    }
+{INT}               {column += yyleng; 
+                      yylval.sval = malloc(strlen(yytext));
+                      strncpy(yylval.sval, yytext, strlen(yytext));
+                      return(INT); 
+                    }
+{FLOAT}             {column += yyleng; yylval.sval = malloc(strlen(yytext));
+                      strncpy(yylval.sval, yytext, strlen(yytext));
+                      return(FLOAT); 
+                    }
+{STRING}			      {column += yyleng; yylval.sval = malloc(strlen(yytext));
+                      strncpy(yylval.sval, yytext, strlen(yytext));
+                      return(STRING); 
+                    }
 {SEMICOLON}         {column += yyleng; return (SEMICOLON) ;}
 {COMMA}             {column += yyleng; return (COMMA) ;}
 {OPEN_PAREN}        {column += yyleng; return (OPEN_PAREN) ;}

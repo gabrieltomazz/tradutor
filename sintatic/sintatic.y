@@ -16,11 +16,11 @@
   extern int yylex_destroy();
   extern void yyerror(const char *);
   
-  extern FILE *yyin;
+//   extern FILE *yyin;
   int error = 0;
-  char tipo[100];
+//   char tipo[100];
 
-  NodoArvore* raiz;
+  TreeNodes* raiz;
 %}
 
 %union
@@ -31,65 +31,70 @@
   } token;
   char	*sval;
 
-  struct NodoArvore* no;
+  struct TreeNodes* typeNode;
 };
 
-%type <no> program
-%type <no> list_declaration
-%type <no> main_declaration
-%type <no> var_declaration
-%type <no> func_declaration
-%type <no> list_args
-%type <no> blockStmt
-%type <no> list_statements
-%type <no> stmt
-%type <no> input_output_expr
-%type <no> iteration_expr
-%type <no> condition_expr
-%type <no> return_stmt
-%type <no> expr_stmt
-%type <no> expr
-%type <no> func_expr
-%type <no> func_in_expr
-%type <no> op_or_expr
-%type <no> op_and_expr
-%type <no> logical_expr
-%type <no> arithmetic_expr
-%type <no> mult_expr
-%type <no> first_term
-%type <no> term
-%type <no> logical_ops
-%type <no> str_expr
-%type <no> list_expr
-%type <no> var
-%type <no> num_tipos
-%type <no> tipos
+%type <typeNode> program
+%type <typeNode> list_declaration
+%type <typeNode> main_declaration
+%type <typeNode> var_declaration
+%type <typeNode> func_declaration
+%type <typeNode> list_args
+%type <typeNode> blockStmt
+%type <typeNode> list_statements
+%type <typeNode> stmt
+%type <typeNode> input_output_expr
+%type <typeNode> iteration_expr
+%type <typeNode> condition_expr
+%type <typeNode> return_stmt
+%type <typeNode> expr_stmt
+%type <typeNode> expr
+%type <typeNode> assign
+%type <typeNode> func_expr
+%type <typeNode> func_in_expr
+%type <typeNode> op_or_expr
+%type <typeNode> op_and_expr
+%type <typeNode> logical_expr
+%type <typeNode> arithmetic_expr
+%type <typeNode> mult_expr
+%type <typeNode> first_term
+%type <typeNode> term
+%type <typeNode> logical_ops
+%type <typeNode> str_expr
+%type <typeNode> list_expr
+%type <typeNode> var
+%type <typeNode> num_tipos
+%type <typeNode> tipos
+%type <typeNode> is_set_expr
+%type <typeNode> block_cond
+%type <typeNode> simple_complex_block_stmt
+%type <typeNode> adds_op
+%type <typeNode> mult_ops
 
+%token <sval> ID INT FLOAT ADD_OP MULT_OP STRING
 
-%token <sval> ID
 %token <token> MAIN EMPTY
-%token <token> TYPE_INT TYPE_FLOAT TYPE_ELEM  TYPE_SET   
-%token <token> ADD_OP MULT_OP
+%token <token> TYPE_INT TYPE_FLOAT TYPE_ELEM TYPE_SET   
 %token <token> CMD_IF CMD_FOR CMD_FORALL
 %token <token> GT_OP LT_OP LTE_OP GTE_OP NEQ_OP EQUAL_OP
 %token <token> ADD_FUNC IS_SET_FUNC REMOVE_FUNC EXIST_FUNC IN_OP 
 %token <token> OP_OR OP_AND OP_NEG
 %token <token> ATRIBUTION CMD_WRITE CMD_WRITELN
-%token <token> CMD_READ CMD_RETURN INT FLOAT STRING SEMICOLON COMMA OPEN_PAREN CLS_PAREN OP_CUR_BRACKET CLS_CUR_BRACKET
+%token <token> CMD_READ CMD_RETURN SEMICOLON COMMA OPEN_PAREN CLS_PAREN OP_CUR_BRACKET CLS_CUR_BRACKET
 
 %%
 
 program: 
         list_declaration {
-            $$ = criarNodo("program");
-            $$->filho = $1;
+            $$ = buildNode("program");
+            $$->childNode = $1;
             raiz = $$;
         }
 ;
 
 list_declaration: 
         list_declaration main_declaration {
-            $1->proximo = $2;
+            $1->brotherNode = $2;
         }
         | main_declaration 
 ;
@@ -102,32 +107,50 @@ main_declaration:
 
 var_declaration: 
         tipos var SEMICOLON {
-            $$ = criarNodo("var_declaration");
-            $$->filho = $1; 
-            $1->proximo = $2;  
+            $$ = buildNode("var_declaration");
+            $$->childNode = $1; 
+            $1->brotherNode = $2;  
         }
+        /* | tipos var assign arithmetic_expr SEMICOLON {
+            $$ = buildNode("var_declaration");
+            $$->childNode = $1; 
+            $1->brotherNode = $2;  
+            $2->brotherNode = $3;
+            $3->brotherNode = $4;
+        } */
 ;
 
 func_declaration: 
         tipos var OPEN_PAREN list_args CLS_PAREN blockStmt {
-            $$ = criarNodo("func_declaration");   
-            $$->filho = $1;
-            $1->proximo = $2;
-            $2->proximo = $4;
-            $4->proximo = $6;
+            $$ = buildNode("func_declaration");   
+            $$->childNode = $1;
+            $1->brotherNode = $2;
+            $2->brotherNode = $4;
+            $4->brotherNode = $6;
         }
         | tipos MAIN OPEN_PAREN list_args[args] CLS_PAREN blockStmt[block] {
-            $$ = criarNodo("func_declaration_main");   
-            $$->filho = $tipos;
-            $tipos->proximo = $args;
-            $args->proximo = $block;
+            $$ = buildNode("func_declaration_main");   
+            $$->childNode = $tipos;
+            $tipos->brotherNode = $args;
+            $args->brotherNode = $block;
         }
 ;
 
 list_args:
-        tipos var COMMA list_args
-        | tipos var
-        | %empty 
+        tipos var COMMA list_args {
+                $$ = buildNode("list_args");  
+                $$->childNode = $1;
+                $1->brotherNode = $2;
+                $2->brotherNode = $4;
+        }
+        | tipos var {
+                $$ = buildNode("list_args"); 
+                $$->childNode = $1;
+                $1->brotherNode = $2; 
+        }
+        | %empty {
+                $$ = buildNode("no_args"); 
+        } 
 ;
 
 blockStmt: 
@@ -140,7 +163,7 @@ blockStmt:
 list_statements: 
         stmt list_statements {
                $$ = $1;
-               $1->proximo = $2; 
+               $1->brotherNode = $2; 
         }
         | stmt
         /* | %empty {printf("empty statement\n");} */
@@ -160,36 +183,50 @@ stmt:
 
 input_output_expr: 
         CMD_WRITE OPEN_PAREN str_expr CLS_PAREN SEMICOLON {
-                $$ = criarNodo("CMD_WRITE_STR");
+                $$ = buildNode("CMD_WRITE_STR");
         }
         | CMD_WRITE OPEN_PAREN expr CLS_PAREN SEMICOLON {
-                $$ = criarNodo("CMD_WRITE_EXPR");
+                $$ = buildNode("CMD_WRITE_EXPR");
         }
         | CMD_WRITELN OPEN_PAREN str_expr CLS_PAREN SEMICOLON {
-                $$ = criarNodo("CMD_WRITELN_STR");
+                $$ = buildNode("CMD_WRITELN_STR");
         }
         | CMD_WRITELN OPEN_PAREN expr CLS_PAREN SEMICOLON {
-                $$ = criarNodo("CMD_WRITELN_EXPR");
+                $$ = buildNode("CMD_WRITELN_EXPR");
         }
         | CMD_READ OPEN_PAREN var CLS_PAREN SEMICOLON {
-                $$ = criarNodo("CMD_READ_VAR");
+                $$ = buildNode("CMD_READ_VAR");
         }
 ;
 
 iteration_expr:
         CMD_FOR OPEN_PAREN assign SEMICOLON expr SEMICOLON assign CLS_PAREN blockStmt
+        {     
+             $$ = buildNode("for");
+             $$->childNode = $3;
+             $3->brotherNode = $5;
+             $5->brotherNode = $7;
+             $7->brotherNode = $9;  
+        
+        }
 ;
 
 condition_expr: 
         CMD_IF OPEN_PAREN expr CLS_PAREN  block_cond {
-                $$ = $3;
+                $$ = buildNode("if");
+                $$->childNode = $3;
+                $3->brotherNode = $5;
         }
 ;
 
 block_cond:
-        simple_complex_block_stmt %prec THEN
-        | simple_complex_block_stmt CMD_ELSE simple_complex_block_stmt
-        ;
+        simple_complex_block_stmt %prec THEN 
+        | simple_complex_block_stmt CMD_ELSE simple_complex_block_stmt {
+                $$ = buildNode("else");
+                $$->childNode = $1;
+                $1->brotherNode = $3;
+        }
+;
 
 simple_complex_block_stmt:
         stmt
@@ -197,15 +234,20 @@ simple_complex_block_stmt:
 ;
 
 return_stmt:
-        CMD_RETURN SEMICOLON
-        | CMD_RETURN expr SEMICOLON  
+        CMD_RETURN SEMICOLON {
+              $$ = buildNode("return");  
+        }
+        | CMD_RETURN expr SEMICOLON  {
+                $$ = buildNode("return");  
+                $$->childNode = $2;
+        }
 ;
 
 set_stmt: 
         CMD_FORALL OPEN_PAREN var IN_OP func_expr CLS_PAREN simple_complex_block_stmt 
         | CMD_FORALL OPEN_PAREN var IN_OP var CLS_PAREN simple_complex_block_stmt
         | is_set_expr SEMICOLON
-
+;
 expr_stmt:
         expr SEMICOLON
 ;
@@ -216,7 +258,11 @@ expr:
 ;
 
 assign:
-        var ATRIBUTION expr 
+        var ATRIBUTION expr {
+              $$ = buildNode(" = ");
+              $$->childNode = $1;
+              $1->brotherNode = $3;
+        }
 ;
 
 func_expr: 
@@ -236,7 +282,9 @@ func_in_expr:
 
 op_or_expr: 
         op_or_expr OP_OR op_and_expr {
-
+              $$ = buildNode("or");
+              $$->childNode = $1;
+              $1->brotherNode = $3;
         }
         | op_and_expr 
         | func_in_expr
@@ -244,7 +292,9 @@ op_or_expr:
 
 op_and_expr:
         op_and_expr OP_AND logical_expr {
-
+              $$ = buildNode("and");
+              $$->childNode = $1;
+              $1->brotherNode = $3;  
         }
         | logical_expr 
 ;
@@ -252,26 +302,40 @@ op_and_expr:
 logical_expr:
        logical_expr logical_ops arithmetic_expr {
              $$ = $2;
-             $2->filho = $1; 
-             $1->proximo = $3; 
+             $2->childNode = $1; 
+             $1->brotherNode = $3; 
        } 
        | arithmetic_expr
 ;
 
 arithmetic_expr: 
-        arithmetic_expr ADD_OP mult_expr 
+        arithmetic_expr adds_op mult_expr {
+              $$ = $2;
+              $2->childNode = $1;
+              $1->brotherNode = $3;
+        }
         | mult_expr
 ;
 
 mult_expr:
-        mult_expr MULT_OP first_term
+        mult_expr mult_ops first_term {
+              $$ = $2;
+              $2->childNode = $1;
+              $1->brotherNode = $3;
+        }
         | first_term
 ;
 
 first_term: 
         term
-        | OP_NEG term  
-        | ADD_OP term
+        | OP_NEG term {
+              $$ = buildNode(" ! ");
+              $$->childNode = $2;
+        } 
+        | adds_op term {
+              $$ = $1;
+              $1->brotherNode = $2;
+        }
         | var OPEN_PAREN list_expr CLS_PAREN
         | var OPEN_PAREN CLS_PAREN
 ; 
@@ -285,27 +349,29 @@ term:
 
 logical_ops: 
         LT_OP {
-                $$ = criarNodo("LT_OP");
+                $$ = buildNode("LT_OP");
         }
         |  LTE_OP {
-                $$ = criarNodo("LTE_OP");
+                $$ = buildNode("LTE_OP");
         }  
         |  GT_OP {
-                $$ = criarNodo("GT_OP");
+                $$ = buildNode("GT_OP");
         } 
         |  GTE_OP {
-                $$ = criarNodo("GTE_OP");
+                $$ = buildNode("GTE_OP");
         }
         |  NEQ_OP {
-                $$ = criarNodo("NEQ_OP");
+                $$ = buildNode("NEQ_OP");
         }
         |  EQUAL_OP {
-                $$ = criarNodo("EQUAL_OP");
+                $$ = buildNode("EQUAL_OP");
         }
 ;
 
 str_expr:
-        STRING
+        STRING {
+            $$ = buildNode($1);
+        }
 ;
 
 list_expr:
@@ -315,28 +381,47 @@ list_expr:
 
 var:
       ID {
-              $$ = criarNodo($1);
+            $$ = buildNode($1);
        } 
 ;
 
+adds_op:
+      ADD_OP {
+            $$ = buildNode($1);  
+      }
+;
+
+mult_ops:
+      MULT_OP {
+            $$ = buildNode($1);  
+      }
+;
+
+
 num_tipos: 
-        FLOAT 
-        | INT 
-        | EMPTY
+        FLOAT {
+              $$ = buildNode($1);
+        }
+        | INT {
+              $$ = buildNode($1);
+        }
+        | EMPTY {
+              $$ = buildNode("EMPTY");
+       }
 ;
 
 tipos: 
         TYPE_INT {
-             $$ = criarNodo("TYPE_INT");
+             $$ = buildNode("TYPE_INT");
         }    
         | TYPE_FLOAT {
-              $$ = criarNodo("TYPE_FLOAT");
+              $$ = buildNode("TYPE_FLOAT");
         }
         | TYPE_SET  {
-              $$ = criarNodo("TYPE_SET");
+              $$ = buildNode("TYPE_SET");
         } 
         | TYPE_ELEM {
-             $$ = criarNodo("TYPE_ELEM");
+             $$ = buildNode("TYPE_ELEM");
         }
 ;
 %%
@@ -355,7 +440,7 @@ void yyerror(const char* msg) {
 int main(int argc, char ** argv) {
     
     /* escopo.idx = -1;
-    escopo.proximo = -1; */
+    escopo.brotherNode = -1; */
     
     yyparse();
 
@@ -363,10 +448,17 @@ int main(int argc, char ** argv) {
     if(error) return 0;
 
     /* printTabela(indiceTabela); */
-    printArvore(raiz, 0);
+    showTree(raiz, 0);
 
-    freeArvore(raiz);
+    clearTree(raiz);
 
     yylex_destroy();
     return 0;
 }
+
+
+// corrigir bug do if else
+// corrigir int a = 2;
+// corrigir bug error
+// montar tabela de simbolos
+// escrever relatório
