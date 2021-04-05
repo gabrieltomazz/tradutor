@@ -3,11 +3,25 @@
   #include <math.h>
   #include <string.h>
   #include "sintatic.tab.h"
-//   int yyerror(char *errormsg);
+  // int yyerror(char *errormsg);
 //   int yyparse();
 
   int line = 1;
   int column = 0;
+
+  void fillToken(int line, int column) {
+        yylval.token.line = line;
+        yylval.token.column = column;
+        yylval.token.body = strdup(yytext);
+
+        yylval.sval = malloc(strlen(yytext));
+        strncpy(yylval.sval, yytext, strlen(yytext));
+  }
+  void fill(int line, int column) {
+        yylval.token.line = line;
+        yylval.token.column = column;
+        yylval.token.body = strdup(yytext);
+  }
 %}
 
 INT [0-9]+ 
@@ -56,69 +70,65 @@ CLS_CUR_BRACKET "}"
 
 "//".*\n            {line++;column=0;}
 \n		              {line++;column=0;}
-{MAIN}              {column += yyleng; return (MAIN);}
-{EMPTY}             {column += yyleng; return (EMPTY);}
-{TYPE_INT}          {column += yyleng; return (TYPE_INT);}
-{TYPE_FLOAT}        {column += yyleng; return (TYPE_FLOAT);}
-{TYPE_ELEM}         {column += yyleng; return (TYPE_ELEM);}
-{TYPE_SET}          {column += yyleng; return (TYPE_SET);}
-{GT_OP}             {column += yyleng; return (GT_OP);}
-{LT_OP}             {column += yyleng; return (LT_OP);}
-{GTE_OP}            {column += yyleng; return (GTE_OP);}
-{LTE_OP}            {column += yyleng; return (LTE_OP);}
-{NEQ_OP}            {column += yyleng; return (NEQ_OP);}
-{EQUAL_OP}          {column += yyleng; return (EQUAL_OP);}
+{MAIN}              {column += yyleng; fill(line, column); return (MAIN);}
+{EMPTY}             {column += yyleng; fill(line, column); return (EMPTY);}
+{TYPE_INT}          {column += yyleng; fill(line, column); return (TYPE_INT);}
+{TYPE_FLOAT}        {column += yyleng; fill(line, column); return (TYPE_FLOAT);}
+{TYPE_ELEM}         {column += yyleng; fill(line, column); return (TYPE_ELEM);}
+{TYPE_SET}          {column += yyleng; fill(line, column); return (TYPE_SET);}
+{GT_OP}             {column += yyleng; fill(line, column); return (GT_OP);}
+{LT_OP}             {column += yyleng; fill(line, column); return (LT_OP);}
+{GTE_OP}            {column += yyleng; fill(line, column); return (GTE_OP);}
+{LTE_OP}            {column += yyleng; fill(line, column); return (LTE_OP);}
+{NEQ_OP}            {column += yyleng; fill(line, column); return (NEQ_OP);}
+{EQUAL_OP}          {column += yyleng; fill(line, column); return (EQUAL_OP);}
 {ADD_OP}            {column += yyleng; 
-                      yylval.sval = malloc(strlen(yytext));
-                      strncpy(yylval.sval, yytext, strlen(yytext));
+                      fillToken(line, column);
                       return(ADD_OP); 
                     }     
-{MULT_OP}           {column += yyleng; 
-                      yylval.sval = malloc(strlen(yytext));
-                      strncpy(yylval.sval, yytext, strlen(yytext));
+{MULT_OP}           { column += yyleng; 
+                      fillToken(line, column);
                       return(MULT_OP); 
                     }
-{OP_OR}             {column += yyleng; return (OP_OR);}
-{OP_AND}            {column += yyleng; return (OP_AND);}
-{OP_NEG}            {column += yyleng; return (OP_NEG);}
-{ADD_FUNC}          {column += yyleng; return (ADD_FUNC);}
-{IS_SET_FUNC}       {column += yyleng; return (IS_SET_FUNC);}
-{REMOVE_FUNC}       {column += yyleng; return (REMOVE_FUNC);}
-{EXIST_FUNC}        {column += yyleng; return (EXIST_FUNC);}
-{IN_OP}             {column += yyleng; return (IN_OP);}
-{ATRIBUTION}        {column += yyleng; return (ATRIBUTION);}
-{CMD_IF}            {column += yyleng; return (CMD_IF) ;}
-{CMD_ELSE}          {column += yyleng; return (CMD_ELSE) ;}
-{CMD_FOR}		        {column += yyleng; return (CMD_FOR) ;}
-{CMD_FORALL}		    {column += yyleng; return (CMD_FORALL) ;}
-{CMD_WRITE}	        {column += yyleng; return (CMD_WRITE) ;}
-{CMD_WRITELN}		    {column += yyleng; return (CMD_WRITELN) ;}
-{CMD_READ}		      {column += yyleng; return (CMD_READ) ;}
-{CMD_RETURN}		    {column += yyleng; return (CMD_RETURN) ;}
+{OP_OR}             {column += yyleng; fill(line, column); return (OP_OR);}
+{OP_AND}            {column += yyleng; fill(line, column); return (OP_AND);}
+{OP_NEG}            {column += yyleng; fill(line, column); return (OP_NEG);}
+{ADD_FUNC}          {column += yyleng; fill(line, column); return (ADD_FUNC);}
+{IS_SET_FUNC}       {column += yyleng; fill(line, column); return (IS_SET_FUNC);}
+{REMOVE_FUNC}       {column += yyleng; fill(line, column); return (REMOVE_FUNC);}
+{EXIST_FUNC}        {column += yyleng; fill(line, column); return (EXIST_FUNC);}
+{IN_OP}             {column += yyleng; fill(line, column); return (IN_OP);}
+{ATRIBUTION}        {column += yyleng; fill(line, column); return (ATRIBUTION);}
+{CMD_IF}            {column += yyleng; fill(line, column); return (CMD_IF) ;}
+{CMD_ELSE}          {column += yyleng; fill(line, column); return (CMD_ELSE) ;}
+{CMD_FOR}		        {column += yyleng; fill(line, column); return (CMD_FOR) ;}
+{CMD_FORALL}		    {column += yyleng; fill(line, column); return (CMD_FORALL) ;}
+{CMD_WRITE}	        {column += yyleng; fill(line, column); return (CMD_WRITE) ;}
+{CMD_WRITELN}		    {column += yyleng; fill(line, column); return (CMD_WRITELN) ;}
+{CMD_READ}		      {column += yyleng; fill(line, column); return (CMD_READ) ;}
+{CMD_RETURN}		    {column += yyleng; fill(line, column); return (CMD_RETURN) ;}
 {ID}                {column += yyleng; 
-                      yylval.sval = malloc(strlen(yytext));
-                      strncpy(yylval.sval, yytext, strlen(yytext));
+                      fillToken(line, column);
                       return(ID); 
                     }
 {INT}               {column += yyleng; 
-                      yylval.sval = malloc(strlen(yytext));
-                      strncpy(yylval.sval, yytext, strlen(yytext));
+                      fillToken(line, column);
                       return(INT); 
                     }
-{FLOAT}             {column += yyleng; yylval.sval = malloc(strlen(yytext));
-                      strncpy(yylval.sval, yytext, strlen(yytext));
+{FLOAT}             {column += yyleng; 
+                      fillToken(line, column);
                       return(FLOAT); 
                     }
-{STRING}			      {column += yyleng; yylval.sval = malloc(strlen(yytext));
-                      strncpy(yylval.sval, yytext, strlen(yytext));
+{STRING}			      {column += yyleng; 
+                      fillToken(line, column);
                       return(STRING); 
                     }
-{SEMICOLON}         {column += yyleng; return (SEMICOLON) ;}
-{COMMA}             {column += yyleng; return (COMMA) ;}
-{OPEN_PAREN}        {column += yyleng; return (OPEN_PAREN) ;}
-{CLS_PAREN}         {column += yyleng; return (CLS_PAREN) ;}
-{OP_CUR_BRACKET}    {column += yyleng; return (OP_CUR_BRACKET) ;}
-{CLS_CUR_BRACKET}   {column += yyleng; return (CLS_CUR_BRACKET) ;}
+{SEMICOLON}         {column += yyleng; fill(line, column); return (SEMICOLON) ;}
+{COMMA}             {column += yyleng; fill(line, column); return (COMMA) ;}
+{OPEN_PAREN}        {column += yyleng; fill(line, column); return (OPEN_PAREN) ;}
+{CLS_PAREN}         {column += yyleng; fill(line, column); return (CLS_PAREN) ;}
+{OP_CUR_BRACKET}    {column += yyleng; fill(line, column); return (OP_CUR_BRACKET) ;}
+{CLS_CUR_BRACKET}   {column += yyleng; fill(line, column); return (CLS_CUR_BRACKET) ;}
 
 [ \t\r]+            {column += yyleng;}
 .	                {printf("l:%d col:%d INVALID TOKEN: %s\n", line, column, yytext); column += yyleng;}

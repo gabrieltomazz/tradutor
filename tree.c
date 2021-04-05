@@ -43,13 +43,14 @@ void showTree(TreeNodes *branch, int depth) {
   if(depth == 0) {
     printf("\n < ------------------- Starting -> Syntactic Tree ------------------- >\n");
     printf(" <%s> \n", branch->value);
-
   } else {
 
-    for(int i=0; i<depth; i++){
+    for(int i = 0; i < depth; i++){
       printf(" | ");
     }
+
     printf(" <%s>", branch->value);
+
   }
 
   

@@ -14,7 +14,7 @@
 
   extern int yylex();
   extern int yylex_destroy();
-  extern void yyerror(const char *);
+  extern int yyerror(const char *);
   
 //   extern FILE *yyin;
   int error = 0;
@@ -70,6 +70,7 @@
 %type <typeNode> simple_complex_block_stmt
 %type <typeNode> adds_op
 %type <typeNode> mult_ops
+%type <typeNode> set_stmt
 
 %token <sval> ID INT FLOAT ADD_OP MULT_OP STRING
 
@@ -111,13 +112,6 @@ var_declaration:
             $$->childNode = $1; 
             $1->brotherNode = $2;  
         }
-        /* | tipos var assign arithmetic_expr SEMICOLON {
-            $$ = buildNode("var_declaration");
-            $$->childNode = $1; 
-            $1->brotherNode = $2;  
-            $2->brotherNode = $3;
-            $3->brotherNode = $4;
-        } */
 ;
 
 func_declaration: 
@@ -222,9 +216,11 @@ condition_expr:
 block_cond:
         simple_complex_block_stmt %prec THEN 
         | simple_complex_block_stmt CMD_ELSE simple_complex_block_stmt {
-                $$ = buildNode("else");
+                $$ = buildNode("if_stmt");
                 $$->childNode = $1;
-                $1->brotherNode = $3;
+
+                $$->brotherNode = buildNode("else");
+                $$->brotherNode->childNode = $3;
         }
 ;
 
@@ -244,8 +240,18 @@ return_stmt:
 ;
 
 set_stmt: 
-        CMD_FORALL OPEN_PAREN var IN_OP func_expr CLS_PAREN simple_complex_block_stmt 
-        | CMD_FORALL OPEN_PAREN var IN_OP var CLS_PAREN simple_complex_block_stmt
+        CMD_FORALL OPEN_PAREN var IN_OP func_expr CLS_PAREN simple_complex_block_stmt {
+                $$ = buildNode("forall");  
+                $$->childNode = $3;
+                $3->brotherNode = $5;
+                $5->brotherNode = $7;
+        }
+        | CMD_FORALL OPEN_PAREN var IN_OP var CLS_PAREN simple_complex_block_stmt {
+                $$ = buildNode("forall");  
+                $$->childNode = $3;
+                $3->brotherNode = $5;
+                $5->brotherNode = $7;
+        }
         | is_set_expr SEMICOLON
 ;
 expr_stmt:
@@ -266,18 +272,41 @@ assign:
 ;
 
 func_expr: 
-        ADD_FUNC OPEN_PAREN func_in_expr CLS_PAREN 
-        | REMOVE_FUNC OPEN_PAREN func_in_expr CLS_PAREN 
-        | EXIST_FUNC OPEN_PAREN func_in_expr CLS_PAREN
+        ADD_FUNC OPEN_PAREN func_in_expr CLS_PAREN {
+                $$ = buildNode(" add ");
+                $$->childNode = $3;
+        }
+        | REMOVE_FUNC OPEN_PAREN func_in_expr CLS_PAREN {
+                $$ = buildNode(" remove ");
+                $$->childNode = $3;
+        }
+        | EXIST_FUNC OPEN_PAREN func_in_expr CLS_PAREN {
+                $$ = buildNode(" exist ");
+                $$->childNode = $3;
+        }
 ;
 
 is_set_expr :
-        IS_SET_FUNC OPEN_PAREN var CLS_PAREN 
-        | IS_SET_FUNC OPEN_PAREN func_expr CLS_PAREN 
+        IS_SET_FUNC OPEN_PAREN var CLS_PAREN {
+              $$ = buildNode(" is_set ");
+              $$->childNode = $3;
+        }
+        | IS_SET_FUNC OPEN_PAREN func_expr CLS_PAREN {
+                $$ = buildNode(" is_set ");
+                $$->childNode = $3;
+        }
 
 func_in_expr:
-        op_or_expr IN_OP var 
-        | op_or_expr IN_OP func_expr 
+        op_or_expr IN_OP var {
+                $$ = buildNode(" IN ");
+                $$->childNode = $1;
+                $1->brotherNode = $3;
+        }
+        | op_or_expr IN_OP func_expr {
+                $$ = buildNode(" IN ");
+                $$->childNode = $1;
+                $1->brotherNode = $3;
+        }
 ;
 
 op_or_expr: 
@@ -334,17 +363,21 @@ first_term:
         } 
         | adds_op term {
               $$ = $1;
-              $1->brotherNode = $2;
+              $1->childNode = $2;
         }
-        | var OPEN_PAREN list_expr CLS_PAREN
-        | var OPEN_PAREN CLS_PAREN
+        | var OPEN_PAREN list_expr CLS_PAREN {
+                $$ = $1;
+                $1->brotherNode = $3;
+        }
+        | var OPEN_PAREN CLS_PAREN 
 ; 
 
 term: 
         var 
         | num_tipos
-        | OPEN_PAREN expr CLS_PAREN 
-        /* | is_set_expr */
+        | OPEN_PAREN expr CLS_PAREN {
+                $$ = $2;
+        }
 ;
 
 logical_ops: 
@@ -371,6 +404,7 @@ logical_ops:
 str_expr:
         STRING {
             $$ = buildNode($1);
+            free($STRING);
         }
 ;
 
@@ -382,18 +416,21 @@ list_expr:
 var:
       ID {
             $$ = buildNode($1);
+            free($ID);
        } 
 ;
 
 adds_op:
       ADD_OP {
-            $$ = buildNode($1);  
+            $$ = buildNode($1); 
+            free($ADD_OP); 
       }
 ;
 
 mult_ops:
       MULT_OP {
-            $$ = buildNode($1);  
+            $$ = buildNode($1); 
+            free($MULT_OP);  
       }
 ;
 
@@ -401,13 +438,15 @@ mult_ops:
 num_tipos: 
         FLOAT {
               $$ = buildNode($1);
+              free($FLOAT);
         }
         | INT {
               $$ = buildNode($1);
+              free($INT);
         }
         | EMPTY {
               $$ = buildNode("EMPTY");
-       }
+        }
 ;
 
 tipos: 
@@ -427,9 +466,10 @@ tipos:
 %%
 
 
-void yyerror(const char* msg) {
-  fprintf (stderr, "%-15s %d:%-3d - %s\n", "SYNTAX ERROR", yylval.token.line, yylval.token.column, msg);
+int yyerror(const char* errormsg) {
+  fprintf(stderr, "%s at line:%d, column:%d,\n", errormsg, yylval.token.line, yylval.token.column);
   error++;
+  return 0;
 }
 /* int yyerror(char *errormsg)
 {
@@ -444,7 +484,6 @@ int main(int argc, char ** argv) {
     
     yyparse();
 
-
     if(error) return 0;
 
     /* printTabela(indiceTabela); */
@@ -456,9 +495,5 @@ int main(int argc, char ** argv) {
     return 0;
 }
 
-// terminar grámatica
-// corrigir bug do if else
-// corrigir int a = 2;
-// corrigir bug error
 // montar tabela de simbolos
 // escrever relatório
