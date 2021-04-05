@@ -21,8 +21,19 @@ void showTable(Symbol *table) {
     }
 
 }
-void freeTable(Symbol *table){
 
+void freeTable(Symbol *table){
+    if(!table) {
+        return;
+    }
+    
+    if(table->next){
+        freeTable(table->next);
+    }
+
+    free(table->id);
+    free(table->type);
+    free(table);
 }
 
 

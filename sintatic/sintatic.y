@@ -17,7 +17,7 @@
   extern int yylex_destroy();
   extern int yyerror(const char *);
   
-  TreeNodes* raiz;
+  TreeNodes* origin;
   Symbol* table;
 %}
 
@@ -87,7 +87,7 @@ program:
         list_declaration {
             $$ = buildNode("program");
             $$->childNode = $1;
-            raiz = $$;
+            origin = $$;
         }
 ;
 
@@ -527,9 +527,10 @@ int main(int argc, char ** argv) {
     yyparse();
 
     showTable(table);
-    showTree(raiz, 0);
+    showTree(origin, 0);
 
-    clearTree(raiz);
+    clearTree(origin);
+    freeTable(table);
 
     yylex_destroy();
     return 0;
