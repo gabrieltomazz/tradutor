@@ -1,5 +1,5 @@
 int main(int a){
-    elem h; 
+    float h;
     a = -5;
 
     if(a > b ){

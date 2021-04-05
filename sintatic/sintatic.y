@@ -11,16 +11,15 @@
   #include <stdlib.h>
 
   #include "tree.h"
+  #include "symbol_table.h"
 
   extern int yylex();
   extern int yylex_destroy();
   extern int yyerror(const char *);
-  
-//   extern FILE *yyin;
-  int error = 0;
-//   char tipo[100];
+  // int error = 0;
 
   TreeNodes* raiz;
+  Symbol* table;
 %}
 
 %union
@@ -103,7 +102,6 @@ list_declaration:
 main_declaration: 
         func_declaration 
         | var_declaration 
-        | error {}
 ;
 
 var_declaration: 
@@ -111,7 +109,11 @@ var_declaration:
             $$ = buildNode("var_declaration");
             $$->childNode = $1; 
             $1->brotherNode = $2;  
+         
+            //char *id, char *typ
+            insertItem(&table, $tipos->value, $var->value);
         }
+        | error SEMICOLON { $$ = buildNode("SINTATIC ERR");}
 ;
 
 func_declaration: 
@@ -121,13 +123,24 @@ func_declaration:
             $1->brotherNode = $2;
             $2->brotherNode = $4;
             $4->brotherNode = $6;
+
+            insertItem(&table, $tipos->value, $var->value);
         }
         | tipos MAIN OPEN_PAREN list_args[args] CLS_PAREN blockStmt[block] {
             $$ = buildNode("func_declaration_main");   
             $$->childNode = $tipos;
             $tipos->brotherNode = $args;
             $args->brotherNode = $block;
+
+            insertItem(&table, $tipos->value, "MAIN");
         }
+        | tipos var OPEN_PAREN error CLS_PAREN blockStmt {
+                $$ = buildNode("SINTATIC ERR");
+        }
+        | tipos MAIN OPEN_PAREN error CLS_PAREN blockStmt[block] {
+                $$ = buildNode("SINTATIC ERR");
+        }
+
 ;
 
 list_args:
@@ -136,11 +149,15 @@ list_args:
                 $$->childNode = $1;
                 $1->brotherNode = $2;
                 $2->brotherNode = $4;
+
+                insertItem(&table, $tipos->value, $var->value);
         }
         | tipos var {
                 $$ = buildNode("list_args"); 
                 $$->childNode = $1;
-                $1->brotherNode = $2; 
+                $1->brotherNode = $2;
+
+                insertItem(&table, $tipos->value, $var->value);
         }
         | %empty {
                 $$ = buildNode("no_args"); 
@@ -151,7 +168,6 @@ blockStmt:
         OP_CUR_BRACKET list_statements CLS_CUR_BRACKET {
                 $$ = $2;
         }
-        | error {}
 ;
 
 list_statements: 
@@ -468,25 +484,16 @@ tipos:
 
 int yyerror(const char* errormsg) {
   fprintf(stderr, "%s at line:%d, column:%d,\n", errormsg, yylval.token.line, yylval.token.column);
-  error++;
+  // error++;
   return 0;
 }
-/* int yyerror(char *errormsg)
-{
-     fprintf(stderr, "%s at line:%d, column:%d,\n", errormsg, line, column);
-     return 0;
-} */
 
 int main(int argc, char ** argv) {
-    
-    /* escopo.idx = -1;
-    escopo.brotherNode = -1; */
-    
+
     yyparse();
 
-    if(error) return 0;
-
-    /* printTabela(indiceTabela); */
+    // if(error) return 0;
+    showTable(table);
     showTree(raiz, 0);
 
     clearTree(raiz);
@@ -494,6 +501,3 @@ int main(int argc, char ** argv) {
     yylex_destroy();
     return 0;
 }
-
-// montar tabela de simbolos
-// escrever relatório

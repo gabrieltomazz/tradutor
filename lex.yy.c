@@ -527,13 +527,27 @@ char *yytext;
   #include <math.h>
   #include <string.h>
   #include "sintatic.tab.h"
-//   int yyerror(char *errormsg);
+  // int yyerror(char *errormsg);
 //   int yyparse();
 
   int line = 1;
   int column = 0;
+
+  void fillToken(int line, int column) {
+        yylval.token.line = line;
+        yylval.token.column = column;
+        yylval.token.body = strdup(yytext);
+
+        yylval.sval = malloc(strlen(yytext));
+        strncpy(yylval.sval, yytext, strlen(yytext));
+  }
+  void fill(int line, int column) {
+        yylval.token.line = line;
+        yylval.token.column = column;
+        yylval.token.body = strdup(yytext);
+  }
 /* CHARACTER ['].[']|[']\\n[']|[']\\r[']|[']\\t['] */
-#line 537 "lex.yy.c"
+#line 551 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -713,10 +727,10 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 55 "lexical/lexical.l"
+#line 69 "lexical/lexical.l"
 
 
-#line 720 "lex.yy.c"
+#line 734 "lex.yy.c"
 
 	if ( !(yy_init) )
 		{
@@ -802,259 +816,255 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 57 "lexical/lexical.l"
+#line 71 "lexical/lexical.l"
 {line++;column=0;}
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 58 "lexical/lexical.l"
+#line 72 "lexical/lexical.l"
 {line++;column=0;}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 59 "lexical/lexical.l"
-{column += yyleng; return (MAIN);}
+#line 73 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (MAIN);}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 60 "lexical/lexical.l"
-{column += yyleng; return (EMPTY);}
+#line 74 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (EMPTY);}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 61 "lexical/lexical.l"
-{column += yyleng; return (TYPE_INT);}
+#line 75 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (TYPE_INT);}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 62 "lexical/lexical.l"
-{column += yyleng; return (TYPE_FLOAT);}
+#line 76 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (TYPE_FLOAT);}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 63 "lexical/lexical.l"
-{column += yyleng; return (TYPE_ELEM);}
+#line 77 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (TYPE_ELEM);}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 64 "lexical/lexical.l"
-{column += yyleng; return (TYPE_SET);}
+#line 78 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (TYPE_SET);}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 65 "lexical/lexical.l"
-{column += yyleng; return (GT_OP);}
+#line 79 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (GT_OP);}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 66 "lexical/lexical.l"
-{column += yyleng; return (LT_OP);}
+#line 80 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (LT_OP);}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 67 "lexical/lexical.l"
-{column += yyleng; return (GTE_OP);}
+#line 81 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (GTE_OP);}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 68 "lexical/lexical.l"
-{column += yyleng; return (LTE_OP);}
+#line 82 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (LTE_OP);}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 69 "lexical/lexical.l"
-{column += yyleng; return (NEQ_OP);}
+#line 83 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (NEQ_OP);}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 70 "lexical/lexical.l"
-{column += yyleng; return (EQUAL_OP);}
+#line 84 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (EQUAL_OP);}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 71 "lexical/lexical.l"
+#line 85 "lexical/lexical.l"
 {column += yyleng; 
-                      yylval.sval = malloc(strlen(yytext));
-                      strncpy(yylval.sval, yytext, strlen(yytext));
+                      fillToken(line, column);
                       return(ADD_OP); 
                     }     
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 76 "lexical/lexical.l"
-{column += yyleng; 
-                      yylval.sval = malloc(strlen(yytext));
-                      strncpy(yylval.sval, yytext, strlen(yytext));
+#line 89 "lexical/lexical.l"
+{ column += yyleng; 
+                      fillToken(line, column);
                       return(MULT_OP); 
                     }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 81 "lexical/lexical.l"
-{column += yyleng; return (OP_OR);}
+#line 93 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (OP_OR);}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 82 "lexical/lexical.l"
-{column += yyleng; return (OP_AND);}
+#line 94 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (OP_AND);}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 83 "lexical/lexical.l"
-{column += yyleng; return (OP_NEG);}
+#line 95 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (OP_NEG);}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 84 "lexical/lexical.l"
-{column += yyleng; return (ADD_FUNC);}
+#line 96 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (ADD_FUNC);}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 85 "lexical/lexical.l"
-{column += yyleng; return (IS_SET_FUNC);}
+#line 97 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (IS_SET_FUNC);}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 86 "lexical/lexical.l"
-{column += yyleng; return (REMOVE_FUNC);}
+#line 98 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (REMOVE_FUNC);}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 87 "lexical/lexical.l"
-{column += yyleng; return (EXIST_FUNC);}
+#line 99 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (EXIST_FUNC);}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 88 "lexical/lexical.l"
-{column += yyleng; return (IN_OP);}
+#line 100 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (IN_OP);}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 89 "lexical/lexical.l"
-{column += yyleng; return (ATRIBUTION);}
+#line 101 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (ATRIBUTION);}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 90 "lexical/lexical.l"
-{column += yyleng; return (CMD_IF) ;}
+#line 102 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (CMD_IF) ;}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 91 "lexical/lexical.l"
-{column += yyleng; return (CMD_ELSE) ;}
+#line 103 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (CMD_ELSE) ;}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 92 "lexical/lexical.l"
-{column += yyleng; return (CMD_FOR) ;}
+#line 104 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (CMD_FOR) ;}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 93 "lexical/lexical.l"
-{column += yyleng; return (CMD_FORALL) ;}
+#line 105 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (CMD_FORALL) ;}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 94 "lexical/lexical.l"
-{column += yyleng; return (CMD_WRITE) ;}
+#line 106 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (CMD_WRITE) ;}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 95 "lexical/lexical.l"
-{column += yyleng; return (CMD_WRITELN) ;}
+#line 107 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (CMD_WRITELN) ;}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 96 "lexical/lexical.l"
-{column += yyleng; return (CMD_READ) ;}
+#line 108 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (CMD_READ) ;}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 97 "lexical/lexical.l"
-{column += yyleng; return (CMD_RETURN) ;}
+#line 109 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (CMD_RETURN) ;}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 98 "lexical/lexical.l"
+#line 110 "lexical/lexical.l"
 {column += yyleng; 
-                      yylval.sval = malloc(strlen(yytext));
-                      strncpy(yylval.sval, yytext, strlen(yytext));
+                      fillToken(line, column);
                       return(ID); 
                     }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 103 "lexical/lexical.l"
+#line 114 "lexical/lexical.l"
 {column += yyleng; 
-                      yylval.sval = malloc(strlen(yytext));
-                      strncpy(yylval.sval, yytext, strlen(yytext));
+                      fillToken(line, column);
                       return(INT); 
                     }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 108 "lexical/lexical.l"
-{column += yyleng; yylval.sval = malloc(strlen(yytext));
-                      strncpy(yylval.sval, yytext, strlen(yytext));
+#line 118 "lexical/lexical.l"
+{column += yyleng; 
+                      fillToken(line, column);
                       return(FLOAT); 
                     }
 	YY_BREAK
 case 37:
 /* rule 37 can match eol */
 YY_RULE_SETUP
-#line 112 "lexical/lexical.l"
-{column += yyleng; yylval.sval = malloc(strlen(yytext));
-                      strncpy(yylval.sval, yytext, strlen(yytext));
+#line 122 "lexical/lexical.l"
+{column += yyleng; 
+                      fillToken(line, column);
                       return(STRING); 
                     }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 116 "lexical/lexical.l"
-{column += yyleng; return (SEMICOLON) ;}
+#line 126 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (SEMICOLON) ;}
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 117 "lexical/lexical.l"
-{column += yyleng; return (COMMA) ;}
+#line 127 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (COMMA) ;}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 118 "lexical/lexical.l"
-{column += yyleng; return (OPEN_PAREN) ;}
+#line 128 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (OPEN_PAREN) ;}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 119 "lexical/lexical.l"
-{column += yyleng; return (CLS_PAREN) ;}
+#line 129 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (CLS_PAREN) ;}
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 120 "lexical/lexical.l"
-{column += yyleng; return (OP_CUR_BRACKET) ;}
+#line 130 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (OP_CUR_BRACKET) ;}
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 121 "lexical/lexical.l"
-{column += yyleng; return (CLS_CUR_BRACKET) ;}
+#line 131 "lexical/lexical.l"
+{column += yyleng; fill(line, column); return (CLS_CUR_BRACKET) ;}
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 123 "lexical/lexical.l"
+#line 133 "lexical/lexical.l"
 {column += yyleng;}
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 124 "lexical/lexical.l"
+#line 134 "lexical/lexical.l"
 {printf("l:%d col:%d INVALID TOKEN: %s\n", line, column, yytext); column += yyleng;}
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 126 "lexical/lexical.l"
+#line 136 "lexical/lexical.l"
 ECHO;
 	YY_BREAK
-#line 1058 "lex.yy.c"
+#line 1068 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2014,7 +2024,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 126 "lexical/lexical.l"
+#line 136 "lexical/lexical.l"
 
 
 /* int main()

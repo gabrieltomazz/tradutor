@@ -10,7 +10,6 @@ TreeNodes* buildNode(char *value) {
   treeBranch->value = strdup(value);
   treeBranch->brotherNode = NULL;
   treeBranch->childNode = NULL;
-  // treeBranch->simbolo = NULL;
   
   return treeBranch;
 }
@@ -19,10 +18,6 @@ void clearTree(TreeNodes *branch) {
   if(!branch) {
     return;
   }
-  // if(branch->simbolo) {
-  //   free(branch->simbolo->body);
-  //   free(branch->simbolo);
-  // }
   
   if(branch->brotherNode){
     clearTree(branch->brotherNode);
@@ -41,7 +36,7 @@ void showTree(TreeNodes *branch, int depth) {
   }
 
   if(depth == 0) {
-    printf("\n < ------------------- Starting -> Syntactic Tree ------------------- >\n");
+    printf("\n < ------------------- Starting -> Sintatic Tree ------------------- >\n");
     printf(" <%s> \n", branch->value);
   } else {
 
@@ -52,11 +47,6 @@ void showTree(TreeNodes *branch, int depth) {
     printf(" <%s>", branch->value);
 
   }
-
-  
-  // if(branch->simbolo) {
-  //   printf(" [ simbolo -> %s ]", branch->simbolo->body);
-  // }
 
   if(depth > 0) {
     printf("\n");

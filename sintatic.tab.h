@@ -104,7 +104,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 27 "sintatic/sintatic.y"
+#line 26 "sintatic/sintatic.y"
 
   struct Token {
     int column, line;
