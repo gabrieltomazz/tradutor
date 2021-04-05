@@ -1,3 +1,0 @@
-float myadd () {}
-float myadd2 (int a) {}
-float myadd3 (int a, int b, float c) {}

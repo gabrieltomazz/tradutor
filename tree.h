@@ -4,9 +4,8 @@
 typedef struct TreeNodes TreeNodes;
 
 struct TreeNodes {
-  struct TreeNodes* brotherNode; // proximo
-  struct TreeNodes* childNode; // filho
-  // Simbolo* simbolo;
+  struct TreeNodes* brotherNode;
+  struct TreeNodes* childNode; 
   char* value;
 };
 

@@ -16,6 +16,8 @@
   extern int yylex();
   extern int yylex_destroy();
   extern int yyerror(const char *);
+
+  extern FILE *yyin;
   
   TreeNodes* origin;
   Symbol* table;
@@ -261,6 +263,9 @@ return_stmt:
                 $$ = buildNode("return");  
                 $$->childNode = $2;
         }
+        | CMD_RETURN error SEMICOLON {
+                $$ = buildNode("SINTATIC ERR!");
+        }
 ;
 
 set_stmt: 
@@ -277,7 +282,13 @@ set_stmt:
                 $5->brotherNode = $7;
         }
         | is_set_expr SEMICOLON 
-        | CMD_FORALL OPEN_PAREN error IN_OP error CLS_PAREN error {
+        | CMD_FORALL OPEN_PAREN error IN_OP error CLS_PAREN simple_complex_block_stmt {
+                $$ = buildNode("SINTATIC ERR!");
+        }
+        | CMD_FORALL OPEN_PAREN error IN_OP func_expr CLS_PAREN error {
+                $$ = buildNode("SINTATIC ERR!");
+        }
+        | CMD_FORALL OPEN_PAREN var IN_OP error CLS_PAREN simple_complex_block_stmt {
                 $$ = buildNode("SINTATIC ERR!");
         }
 ;
@@ -522,8 +533,9 @@ int yyerror(const char* errormsg) {
   return 0;
 }
 
-int main(int argc, char ** argv) {
-
+int main(int argc, char *argv[]) {
+   
+    yyin = fopen(argv[1], "r");
     yyparse();
 
     showTable(table);
@@ -531,7 +543,8 @@ int main(int argc, char ** argv) {
 
     clearTree(origin);
     freeTable(table);
-
+    
+    fclose(yyin);
     yylex_destroy();
     return 0;
 }
