@@ -16,8 +16,7 @@
   extern int yylex();
   extern int yylex_destroy();
   extern int yyerror(const char *);
-  // int error = 0;
-
+  
   TreeNodes* raiz;
   Symbol* table;
 %}
@@ -135,10 +134,10 @@ func_declaration:
             insertItem(&table, $tipos->value, "MAIN");
         }
         | tipos var OPEN_PAREN error CLS_PAREN blockStmt {
-                $$ = buildNode("SINTATIC ERR");
+                $$ = buildNode("SINTATIC ERR!");
         }
         | tipos MAIN OPEN_PAREN error CLS_PAREN blockStmt[block] {
-                $$ = buildNode("SINTATIC ERR");
+                $$ = buildNode("SINTATIC ERR!");
         }
 
 ;
@@ -176,7 +175,6 @@ list_statements:
                $1->brotherNode = $2; 
         }
         | stmt
-        /* | %empty {printf("empty statement\n");} */
 ;
 
 stmt:   
@@ -187,7 +185,6 @@ stmt:
         | expr_stmt 
         | set_stmt 
         | var_declaration 
-        /* | is_set_expr SEMICOLON */
         | assign SEMICOLON
 ;
 
@@ -207,11 +204,19 @@ input_output_expr:
         | CMD_READ OPEN_PAREN var CLS_PAREN SEMICOLON {
                 $$ = buildNode("CMD_READ_VAR");
         }
+        | CMD_WRITE OPEN_PAREN error CLS_PAREN SEMICOLON {
+                $$ = buildNode("SINTATIC ERR!");
+        }
+        | CMD_WRITELN OPEN_PAREN error CLS_PAREN SEMICOLON {
+                $$ = buildNode("SINTATIC ERR!");
+        }
+        | CMD_READ OPEN_PAREN error CLS_PAREN SEMICOLON {
+                $$ = buildNode("SINTATIC ERR!");
+        }
 ;
 
 iteration_expr:
-        CMD_FOR OPEN_PAREN assign SEMICOLON expr SEMICOLON assign CLS_PAREN blockStmt
-        {     
+        CMD_FOR OPEN_PAREN assign SEMICOLON expr SEMICOLON assign CLS_PAREN blockStmt {     
              $$ = buildNode("for");
              $$->childNode = $3;
              $3->brotherNode = $5;
@@ -226,6 +231,9 @@ condition_expr:
                 $$ = buildNode("if");
                 $$->childNode = $3;
                 $3->brotherNode = $5;
+        }
+        | CMD_IF OPEN_PAREN error CLS_PAREN error {
+                $$ = buildNode("SINTATIC ERR!");
         }
 ;
 
@@ -268,10 +276,13 @@ set_stmt:
                 $3->brotherNode = $5;
                 $5->brotherNode = $7;
         }
-        | is_set_expr SEMICOLON
+        | is_set_expr SEMICOLON 
+        | CMD_FORALL OPEN_PAREN error IN_OP error CLS_PAREN error {
+                $$ = buildNode("SINTATIC ERR!");
+        }
 ;
 expr_stmt:
-        expr SEMICOLON
+        expr SEMICOLON 
 ;
 
 expr:
@@ -300,6 +311,15 @@ func_expr:
                 $$ = buildNode(" exist ");
                 $$->childNode = $3;
         }
+        | ADD_FUNC OPEN_PAREN error CLS_PAREN {
+             $$ = buildNode("SINTATIC ERR!");   
+        }
+        | REMOVE_FUNC OPEN_PAREN error CLS_PAREN {
+             $$ = buildNode("SINTATIC ERR!");   
+        } 
+        | EXIST_FUNC OPEN_PAREN error CLS_PAREN {
+             $$ = buildNode("SINTATIC ERR!");    
+        }
 ;
 
 is_set_expr :
@@ -310,6 +330,9 @@ is_set_expr :
         | IS_SET_FUNC OPEN_PAREN func_expr CLS_PAREN {
                 $$ = buildNode(" is_set ");
                 $$->childNode = $3;
+        }
+        | IS_SET_FUNC OPEN_PAREN error CLS_PAREN {
+             $$ = buildNode("SINTATIC ERR!");    
         }
 
 func_in_expr:
@@ -386,6 +409,12 @@ first_term:
                 $1->brotherNode = $3;
         }
         | var OPEN_PAREN CLS_PAREN 
+        | var OPEN_PAREN error CLS_PAREN {
+                $$ = buildNode("SINTATIC ERR!");
+        }
+        | error OPEN_PAREN  CLS_PAREN {
+                $$ = buildNode("SINTATIC ERR!");
+        }
 ; 
 
 term: 
@@ -393,6 +422,9 @@ term:
         | num_tipos
         | OPEN_PAREN expr CLS_PAREN {
                 $$ = $2;
+        }
+        | OPEN_PAREN error  CLS_PAREN {
+                $$ = buildNode("SINTATIC ERR!");
         }
 ;
 
@@ -426,7 +458,10 @@ str_expr:
 
 list_expr:
         expr COMMA list_expr
-        | expr
+        | expr 
+        | error COMMA error {
+             $$ = buildNode("SINTATIC ERR!");   
+        }
 ;
 
 var:
@@ -484,7 +519,6 @@ tipos:
 
 int yyerror(const char* errormsg) {
   fprintf(stderr, "%s at line:%d, column:%d,\n", errormsg, yylval.token.line, yylval.token.column);
-  // error++;
   return 0;
 }
 
@@ -492,7 +526,6 @@ int main(int argc, char ** argv) {
 
     yyparse();
 
-    // if(error) return 0;
     showTable(table);
     showTree(raiz, 0);
 
