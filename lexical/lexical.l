@@ -6,20 +6,20 @@
   // int yyerror(char *errormsg);
 //   int yyparse();
 
-  int line = 1;
-  int column = 0;
+  extern int line;
+  extern int column;
 
   void fillToken(int line, int column) {
-        yylval.token.line = line;
-        yylval.token.column = column;
+        // yylval.token.line = line;
+        // yylval.token.column = column;
         yylval.token.body = strdup(yytext);
 
         yylval.sval = malloc(strlen(yytext));
         strncpy(yylval.sval, yytext, strlen(yytext));
   }
   void fill(int line, int column) {
-        yylval.token.line = line;
-        yylval.token.column = column;
+        // yylval.token.line = line;
+        // yylval.token.column = column;
         yylval.token.body = strdup(yytext);
   }
 %}

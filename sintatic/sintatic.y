@@ -18,6 +18,8 @@
   extern int yyerror(const char *);
 
   extern FILE *yyin;
+  int line = 1;
+  int column = 0;
   
   TreeNodes* origin;
   Symbol* table;
@@ -26,7 +28,7 @@
 %union
 {
   struct Token {
-    int column, line;
+    // int column, line;
     char *body;
   } token;
   char	*sval;
@@ -283,6 +285,9 @@ return_stmt:
         | CMD_RETURN error SEMICOLON {
                 $$ = buildNode("SINTATIC ERR!");
         }
+        | CMD_RETURN expr error {
+                $$ = buildNode("SINTATIC ERR!");
+        }
 ;
 
 set_stmt: 
@@ -311,6 +316,10 @@ set_stmt:
 ;
 expr_stmt:
         expr SEMICOLON 
+        | expr error {
+                $$ = buildNode("SINTATIC ERR!");
+        }
+
 ;
 
 expr:
@@ -503,16 +512,15 @@ adds_op:
       ADD_OP {
             $$ = buildNode($1); 
             free($1); 
-      }
+      } 
 ;
 
 mult_ops:
       MULT_OP {
-            $$ = buildNode($1); 
-            free($1);  
+              $$ = buildNode($1); 
+              free($1);  
       }
 ;
-
 
 num_tipos: 
         FLOAT {
@@ -546,7 +554,7 @@ tipos:
 
 
 int yyerror(const char* errormsg) {
-  fprintf(stderr, "%s at line:%d, column:%d,\n", errormsg, yylval.token.line, yylval.token.column);
+  fprintf(stderr, "%s at line:%d, column:%d,\n", errormsg, line, column);
   return 0;
 }
 
