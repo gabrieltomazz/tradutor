@@ -71,6 +71,7 @@
 %type <typeNode> adds_op
 %type <typeNode> mult_ops
 %type <typeNode> set_stmt
+%type <typeNode> many_declaration
 
 %token <sval> ID INT FLOAT ADD_OP MULT_OP STRING
 
@@ -98,6 +99,7 @@ list_declaration:
             $1->brotherNode = $2;
         }
         | main_declaration 
+        | error  { $$ = buildNode("error program"); }
 ;
 
 main_declaration: 
@@ -114,7 +116,22 @@ var_declaration:
             //char *id, char *typ
             insertItem(&table, $tipos->value, $var->value);
         }
+        | tipos var COMMA many_declaration SEMICOLON {
+            $$ = buildNode("var_declaration");
+            $$->childNode = $1; 
+            $1->brotherNode = $2;  
+            $2->brotherNode = $4; 
+         
+            //char *id, char *typ
+            insertItem(&table, $tipos->value, $2->value);
+            insertItem(&table, $tipos->value, $4->value);
+        }
         | error SEMICOLON { $$ = buildNode("SINTATIC ERR");}
+;
+
+many_declaration: 
+        var COMMA
+        | var;
 ;
 
 func_declaration: 
@@ -125,7 +142,7 @@ func_declaration:
             $2->brotherNode = $4;
             $4->brotherNode = $6;
 
-            insertItem(&table, $tipos->value, $var->value);
+            insertItem(&table, "FUNCTION", $var->value);
         }
         | tipos MAIN OPEN_PAREN list_args[args] CLS_PAREN blockStmt[block] {
             $$ = buildNode("func_declaration_main");   
@@ -133,7 +150,7 @@ func_declaration:
             $tipos->brotherNode = $args;
             $args->brotherNode = $block;
 
-            insertItem(&table, $tipos->value, "MAIN");
+            insertItem(&table, "FUNCTION", "main");
         }
         | tipos var OPEN_PAREN error CLS_PAREN blockStmt {
                 $$ = buildNode("SINTATIC ERR!");
@@ -478,21 +495,21 @@ list_expr:
 var:
       ID {
             $$ = buildNode($1);
-            free($ID);
+            free($1);
        } 
 ;
 
 adds_op:
       ADD_OP {
             $$ = buildNode($1); 
-            free($ADD_OP); 
+            free($1); 
       }
 ;
 
 mult_ops:
       MULT_OP {
             $$ = buildNode($1); 
-            free($MULT_OP);  
+            free($1);  
       }
 ;
 
@@ -500,11 +517,11 @@ mult_ops:
 num_tipos: 
         FLOAT {
               $$ = buildNode($1);
-              free($FLOAT);
+              free($1);
         }
         | INT {
               $$ = buildNode($1);
-              free($INT);
+              free($1);
         }
         | EMPTY {
               $$ = buildNode("EMPTY");

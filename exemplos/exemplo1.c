@@ -1,12 +1,12 @@
 int main(int a){
-    float h;
+    float h, b;
     a = -5;
 
     is_set(a);
     add(a in b);
 
     if(a > b) {
-        float v;
+        float v
         v = b + 2.1;
     }else {
         a = -b + 3;
