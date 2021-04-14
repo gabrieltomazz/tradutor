@@ -212,18 +212,23 @@ stmt:
 input_output_expr: 
         CMD_WRITE OPEN_PAREN str_expr CLS_PAREN SEMICOLON {
                 $$ = buildNode("CMD_WRITE_STR");
+                $$->childNode = $3;
         }
         | CMD_WRITE OPEN_PAREN expr CLS_PAREN SEMICOLON {
                 $$ = buildNode("CMD_WRITE_EXPR");
+                $$->childNode = $3;
         }
         | CMD_WRITELN OPEN_PAREN str_expr CLS_PAREN SEMICOLON {
                 $$ = buildNode("CMD_WRITELN_STR");
+                $$->childNode = $3;
         }
         | CMD_WRITELN OPEN_PAREN expr CLS_PAREN SEMICOLON {
                 $$ = buildNode("CMD_WRITELN_EXPR");
+                $$->childNode = $3;
         }
         | CMD_READ OPEN_PAREN var CLS_PAREN SEMICOLON {
                 $$ = buildNode("CMD_READ_VAR");
+                $$->childNode = $3;
         }
         | CMD_WRITE OPEN_PAREN error CLS_PAREN SEMICOLON {
                 $$ = buildNode("SINTATIC ERR!");
