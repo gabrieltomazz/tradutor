@@ -15,8 +15,7 @@ void showTable(Symbol *table) {
     Symbol *aux = table;
     printf(" | ----- Symbol Table -----  \n");
     while(aux){
-        printf(" |   TYPE: %s | ID: %s   \n", aux->type, aux->id);
-                                       
+        printf(" |   TYPE: %-12s | ID: %-12s  | line: %-3d \n", aux->type, aux->id, aux->line );                          
         aux = aux->next;
     }
 
@@ -37,28 +36,100 @@ void freeTable(Symbol *table){
 }
 
 
-void insertItem(Symbol **table, char *type, char *id) {
+Symbol *createItem(char *type, char *id, int line) {
 
-    if(!*table){
-        (*table) = (Symbol *)malloc(sizeof(Symbol));
-        (*table)->next = NULL;
-        (*table)->id = strdup(id);
-        (*table)->type = strdup(type);
+    Symbol *item = (Symbol *)malloc(sizeof(Symbol));
+    item->next = NULL;
+    // item->scope = NULL;
+    item->id = strdup(id);
+    item->type = strdup(type);
+    item->line = line;
+    return item;
+    
+    // if(!*table){
+    //     (*table) = (Symbol *)malloc(sizeof(Symbol));
+    //     (*table)->next = NULL;
+    //     // (*table)->scope = NULL;
+    //     (*table)->id = strdup(id);
+    //     (*table)->type = strdup(type);
+    //     (*table)->line = line;
+    // }else{
+
+        
+        // Symbol *aux = *table;
+
+        // while(aux->next != NULL){
+        //     aux = aux->next;
+        // }
+        // aux->next = item;
+ 
+    // }
+}
+
+void insertItem(Scope *activeScope, Symbol* aux){
+
+    if(!activeScope->listSymbol){
+        activeScope->listSymbol = aux;
     }else{
+        Symbol *auxSymbol = activeScope->listSymbol;
+        
+        while(auxSymbol->next){
+                auxSymbol = auxSymbol->next;
+        }
+        auxSymbol->next = aux;
+    }
+}
 
-        Symbol *item = (Symbol *)malloc(sizeof(Symbol));
-        item->next = NULL;
-        item->id = strdup(id);
-        item->type = strdup(type);
+Scope *buildScope(char *scopeName) {
 
-        Symbol *aux = *table;
+    Scope *scope;
+    scope = (Scope *)malloc(sizeof(Scope));
+    scope->parentScope = NULL;
+    scope->scopeName = strdup(scopeName);
+    scope->listSymbol = NULL;
+    return scope;
 
-        while(aux->next != NULL){
+}
+
+void showScope(Scope *scope) {
+
+    if(scope == NULL){
+        printf("EMPTY SCOPE \n");
+        return;
+    }
+
+    printf(" | ----- Begin Scope: %-12s ------------------  \n",scope->scopeName);                         
+    
+    Symbol *aux = scope->listSymbol; 
+    if(aux == NULL ) {
+        printf(" | --------------- Empty Scope ---------------------   \n");
+    }else{
+        printf(" | --------------- Symbol Table ---------------------   \n");
+    
+        while (aux)
+        {
+            printf(" |   TYPE: %-12s | ID: %-12s  | line: %-3d \n", aux->type, aux->id, aux->line );      
             aux = aux->next;
         }
-        aux->next = item;
- 
+    }
+    printf(" | ----- End Scope: %-12s --------------------  \n",scope->scopeName); 
+    printf(" \n");
+    
+}
+
+void freeScope(Scope *scope){
+
+    if(!scope) {
+        return;
     }
     
+    // if(scope->parentScope){
+    //     freeScope(scope->parentScope);
+    // }
+
+    free(scope->scopeName);
+    free(scope->listSymbol);
+    free(scope);
+
 }
 

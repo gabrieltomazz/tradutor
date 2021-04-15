@@ -107,14 +107,13 @@ union YYSTYPE
 #line 29 "sintatic/sintatic.y"
 
   struct Token {
-    // int column, line;
     char *body;
   } token;
   char	*sval;
 
   struct TreeNodes* typeNode;
 
-#line 118 "sintatic.tab.h"
+#line 117 "sintatic.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
