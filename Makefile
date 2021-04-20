@@ -7,3 +7,6 @@ clean:
 	rm lex.yy.c
 	rm sintatic.tab.c
 	rm sintatic.tab.h
+
+
+# valgrind -v --tool=memcheck --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file="logfile.out"

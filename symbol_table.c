@@ -117,6 +117,21 @@ void showScope(Scope *scope) {
     
 }
 
+void errorMain(int isMain){
+
+    if(isMain == 0){
+             printf(" ----------------------------- SEMANTIC ERROR ---------------------------------------------- \n");
+             printf("                              Main Undeclared                                                \n");
+             printf(" ------------------------------------------------------------------------------------------- \n");
+             printf("\n");
+     }else if(isMain > 1){
+             printf(" ----------------------------- SEMANTIC ERROR ---------------------------------------------- \n");
+             printf("                              Main already declared                                          \n");
+             printf(" ------------------------------------------------------------------------------------------- \n");
+             printf("\n");
+     }
+}
+
 void freeScope(Scope *scope){
 
     if(!scope) {

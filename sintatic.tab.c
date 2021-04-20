@@ -83,11 +83,12 @@
   extern FILE *yyin;
   int line = 1;
   int column = 0;
+  int isMain = 0;
   
   TreeNodes* origin;
   Scope* activeScope;
 
-#line 91 "sintatic.tab.c"
+#line 92 "sintatic.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -579,19 +580,19 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    91,    91,    99,   102,   103,   107,   108,   112,   112,
-     120,   120,   131,   135,   136,   140,   140,   164,   164,   187,
-     190,   197,   208,   216,   222,   228,   232,   236,   237,   238,
-     239,   240,   241,   242,   243,   247,   251,   255,   259,   263,
-     267,   270,   273,   279,   279,   301,   301,   322,   328,   329,
-     329,   351,   352,   356,   359,   363,   366,   372,   372,   388,
-     388,   404,   405,   408,   411,   416,   417,   424,   425,   429,
-     437,   441,   445,   449,   452,   455,   461,   465,   469,   474,
-     479,   487,   492,   493,   497,   502,   506,   511,   515,   520,
-     524,   529,   533,   534,   538,   542,   546,   547,   550,   556,
-     557,   558,   561,   567,   570,   573,   576,   579,   582,   588,
-     595,   596,   597,   603,   610,   617,   624,   628,   632,   638,
-     641,   644,   647
+       0,    92,    92,   100,   103,   104,   108,   109,   113,   113,
+     121,   121,   132,   136,   137,   141,   141,   165,   165,   190,
+     193,   200,   211,   219,   225,   231,   235,   239,   240,   241,
+     242,   243,   244,   245,   246,   250,   254,   258,   262,   266,
+     270,   273,   276,   282,   282,   304,   304,   325,   331,   332,
+     332,   354,   355,   359,   362,   366,   369,   375,   375,   391,
+     391,   407,   408,   411,   414,   419,   420,   427,   428,   432,
+     440,   444,   448,   452,   455,   458,   464,   468,   472,   477,
+     482,   490,   495,   496,   500,   505,   509,   514,   518,   523,
+     527,   532,   536,   537,   541,   545,   549,   550,   553,   559,
+     560,   561,   564,   570,   573,   576,   579,   582,   585,   591,
+     598,   599,   600,   606,   613,   620,   627,   631,   635,   641,
+     644,   647,   650
 };
 #endif
 
@@ -3456,78 +3457,78 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* program: list_declaration  */
-#line 91 "sintatic/sintatic.y"
+#line 92 "sintatic/sintatic.y"
                          {
             (yyval.typeNode) = buildNode("program");
             (yyval.typeNode)->childNode = (yyvsp[0].typeNode);
             origin = (yyval.typeNode);
         }
-#line 3466 "sintatic.tab.c"
+#line 3467 "sintatic.tab.c"
     break;
 
   case 3: /* list_declaration: list_declaration main_declaration  */
-#line 99 "sintatic/sintatic.y"
+#line 100 "sintatic/sintatic.y"
                                           {
             (yyvsp[-1].typeNode)->brotherNode = (yyvsp[0].typeNode);
         }
-#line 3474 "sintatic.tab.c"
+#line 3475 "sintatic.tab.c"
     break;
 
   case 5: /* list_declaration: error  */
-#line 103 "sintatic/sintatic.y"
+#line 104 "sintatic/sintatic.y"
                  { (yyval.typeNode) = buildNode("error program"); }
-#line 3480 "sintatic.tab.c"
+#line 3481 "sintatic.tab.c"
     break;
 
   case 8: /* $@1: %empty  */
-#line 112 "sintatic/sintatic.y"
+#line 113 "sintatic/sintatic.y"
                   {
             Symbol *aux = createItem((yyvsp[-1].typeNode)->value, (yyvsp[0].typeNode)->value, line);
             insertItem(activeScope, aux);
         }
-#line 3489 "sintatic.tab.c"
+#line 3490 "sintatic.tab.c"
     break;
 
   case 9: /* var_declaration: tipos var $@1 SEMICOLON  */
-#line 115 "sintatic/sintatic.y"
+#line 116 "sintatic/sintatic.y"
                     {
             (yyval.typeNode) = buildNode("var_declaration");
             (yyval.typeNode)->childNode = (yyvsp[-3].typeNode); 
             (yyvsp[-3].typeNode)->brotherNode = (yyvsp[-2].typeNode);  
         }
-#line 3499 "sintatic.tab.c"
+#line 3500 "sintatic.tab.c"
     break;
 
   case 10: /* $@2: %empty  */
-#line 120 "sintatic/sintatic.y"
+#line 121 "sintatic/sintatic.y"
                                            {
             Symbol *aux = createItem((yyvsp[-3].typeNode)->value, (yyvsp[-2].typeNode)->value, line);
             insertItem(activeScope, aux);
             Symbol *aux2 = createItem((yyvsp[-3].typeNode)->value, (yyvsp[0].typeNode)->value, line);
             insertItem(activeScope, aux2);
         }
-#line 3510 "sintatic.tab.c"
+#line 3511 "sintatic.tab.c"
     break;
 
   case 11: /* var_declaration: tipos var COMMA many_declaration $@2 SEMICOLON  */
-#line 125 "sintatic/sintatic.y"
+#line 126 "sintatic/sintatic.y"
                     {
             (yyval.typeNode) = buildNode("var_declaration");
             (yyval.typeNode)->childNode = (yyvsp[-5].typeNode); 
             (yyvsp[-5].typeNode)->brotherNode = (yyvsp[-4].typeNode);  
             (yyvsp[-4].typeNode)->brotherNode = (yyvsp[-2].typeNode); 
         }
-#line 3521 "sintatic.tab.c"
+#line 3522 "sintatic.tab.c"
     break;
 
   case 12: /* var_declaration: error SEMICOLON  */
-#line 131 "sintatic/sintatic.y"
+#line 132 "sintatic/sintatic.y"
                           { (yyval.typeNode) = buildNode("SINTATIC ERR");}
-#line 3527 "sintatic.tab.c"
+#line 3528 "sintatic.tab.c"
     break;
 
   case 15: /* $@3: %empty  */
-#line 140 "sintatic/sintatic.y"
+#line 141 "sintatic/sintatic.y"
                              {
             
             // criar o simbolos no escopo atual
@@ -3540,45 +3541,47 @@ yyreduce:
             activeScope = newScope;
             
         }
-#line 3544 "sintatic.tab.c"
+#line 3545 "sintatic.tab.c"
     break;
 
   case 16: /* func_declaration: tipos var OPEN_PAREN $@3 list_args CLS_PAREN blockStmt  */
-#line 151 "sintatic/sintatic.y"
+#line 152 "sintatic/sintatic.y"
                                          {
             (yyval.typeNode) = buildNode("func_declaration");   
             (yyval.typeNode)->childNode = (yyvsp[-6].typeNode);
             (yyvsp[-6].typeNode)->brotherNode = (yyvsp[-5].typeNode);
             (yyvsp[-5].typeNode)->brotherNode = (yyvsp[-2].typeNode);
             (yyvsp[-2].typeNode)->brotherNode = (yyvsp[0].typeNode);
-            
+
             // fecha o Scopo
             showScope(activeScope);
             Scope *auxScope = activeScope->parentScope;
             freeScope(activeScope);
             activeScope = auxScope;
         }
-#line 3562 "sintatic.tab.c"
+#line 3563 "sintatic.tab.c"
     break;
 
   case 17: /* $@4: %empty  */
-#line 164 "sintatic/sintatic.y"
+#line 165 "sintatic/sintatic.y"
                                 {
             // insere simbolos no escopo atual
             Symbol *aux = createItem("FUNCTION", "main", line);
             insertItem(activeScope, aux); 
-
+            
+            // main 
+            isMain = isMain + 1;
             // novo Scopo
             Scope *newScope = buildScope("main"); 
             newScope->parentScope = activeScope; 
             activeScope = newScope;
 
         }
-#line 3578 "sintatic.tab.c"
+#line 3581 "sintatic.tab.c"
     break;
 
   case 18: /* func_declaration: tipos MAIN OPEN_PAREN $@4 list_args CLS_PAREN blockStmt  */
-#line 174 "sintatic/sintatic.y"
+#line 177 "sintatic/sintatic.y"
                                                      {
             (yyval.typeNode) = buildNode("func_declaration_main");   
             (yyval.typeNode)->childNode = (yyvsp[-6].typeNode);
@@ -3592,27 +3595,27 @@ yyreduce:
             activeScope = auxScope;
             
         }
-#line 3596 "sintatic.tab.c"
+#line 3599 "sintatic.tab.c"
     break;
 
   case 19: /* func_declaration: tipos var OPEN_PAREN error CLS_PAREN blockStmt  */
-#line 187 "sintatic/sintatic.y"
+#line 190 "sintatic/sintatic.y"
                                                          {
                 (yyval.typeNode) = buildNode("SINTATIC ERR!");
         }
-#line 3604 "sintatic.tab.c"
+#line 3607 "sintatic.tab.c"
     break;
 
   case 20: /* func_declaration: tipos MAIN OPEN_PAREN error CLS_PAREN blockStmt  */
-#line 190 "sintatic/sintatic.y"
+#line 193 "sintatic/sintatic.y"
                                                                  {
                 (yyval.typeNode) = buildNode("SINTATIC ERR!");
         }
-#line 3612 "sintatic.tab.c"
+#line 3615 "sintatic.tab.c"
     break;
 
   case 21: /* list_args: tipos var COMMA list_args  */
-#line 197 "sintatic/sintatic.y"
+#line 200 "sintatic/sintatic.y"
                                   {
                 (yyval.typeNode) = buildNode("list_args");  
                 (yyval.typeNode)->childNode = (yyvsp[-3].typeNode);
@@ -3624,11 +3627,11 @@ yyreduce:
                 insertItem(activeScope, aux); 
                 
         }
-#line 3628 "sintatic.tab.c"
+#line 3631 "sintatic.tab.c"
     break;
 
   case 22: /* list_args: tipos var  */
-#line 208 "sintatic/sintatic.y"
+#line 211 "sintatic/sintatic.y"
                     {
                 (yyval.typeNode) = buildNode("list_args"); 
                 (yyval.typeNode)->childNode = (yyvsp[-1].typeNode);
@@ -3637,105 +3640,105 @@ yyreduce:
                 Symbol *aux = createItem((yyvsp[-1].typeNode)->value, (yyvsp[0].typeNode)->value, line);
                 insertItem(activeScope, aux); 
         }
-#line 3641 "sintatic.tab.c"
+#line 3644 "sintatic.tab.c"
     break;
 
   case 23: /* list_args: %empty  */
-#line 216 "sintatic/sintatic.y"
+#line 219 "sintatic/sintatic.y"
                  {
                 (yyval.typeNode) = buildNode("no_args"); 
         }
-#line 3649 "sintatic.tab.c"
+#line 3652 "sintatic.tab.c"
     break;
 
   case 24: /* blockStmt: OP_CUR_BRACKET list_statements CLS_CUR_BRACKET  */
-#line 222 "sintatic/sintatic.y"
+#line 225 "sintatic/sintatic.y"
                                                        {
                 (yyval.typeNode) = (yyvsp[-1].typeNode);
         }
-#line 3657 "sintatic.tab.c"
+#line 3660 "sintatic.tab.c"
     break;
 
   case 25: /* list_statements: stmt list_statements  */
-#line 228 "sintatic/sintatic.y"
+#line 231 "sintatic/sintatic.y"
                              {
                (yyval.typeNode) = (yyvsp[-1].typeNode);
                (yyvsp[-1].typeNode)->brotherNode = (yyvsp[0].typeNode); 
         }
-#line 3666 "sintatic.tab.c"
+#line 3669 "sintatic.tab.c"
     break;
 
   case 35: /* input_output_expr: CMD_WRITE OPEN_PAREN str_expr CLS_PAREN SEMICOLON  */
-#line 247 "sintatic/sintatic.y"
+#line 250 "sintatic/sintatic.y"
                                                           {
                 (yyval.typeNode) = buildNode("CMD_WRITE_STR");
                 (yyval.typeNode)->childNode = (yyvsp[-2].typeNode);
         }
-#line 3675 "sintatic.tab.c"
+#line 3678 "sintatic.tab.c"
     break;
 
   case 36: /* input_output_expr: CMD_WRITE OPEN_PAREN expr CLS_PAREN SEMICOLON  */
-#line 251 "sintatic/sintatic.y"
+#line 254 "sintatic/sintatic.y"
                                                         {
                 (yyval.typeNode) = buildNode("CMD_WRITE_EXPR");
                 (yyval.typeNode)->childNode = (yyvsp[-2].typeNode);
         }
-#line 3684 "sintatic.tab.c"
+#line 3687 "sintatic.tab.c"
     break;
 
   case 37: /* input_output_expr: CMD_WRITELN OPEN_PAREN str_expr CLS_PAREN SEMICOLON  */
-#line 255 "sintatic/sintatic.y"
+#line 258 "sintatic/sintatic.y"
                                                               {
                 (yyval.typeNode) = buildNode("CMD_WRITELN_STR");
                 (yyval.typeNode)->childNode = (yyvsp[-2].typeNode);
         }
-#line 3693 "sintatic.tab.c"
+#line 3696 "sintatic.tab.c"
     break;
 
   case 38: /* input_output_expr: CMD_WRITELN OPEN_PAREN expr CLS_PAREN SEMICOLON  */
-#line 259 "sintatic/sintatic.y"
+#line 262 "sintatic/sintatic.y"
                                                           {
                 (yyval.typeNode) = buildNode("CMD_WRITELN_EXPR");
                 (yyval.typeNode)->childNode = (yyvsp[-2].typeNode);
         }
-#line 3702 "sintatic.tab.c"
+#line 3705 "sintatic.tab.c"
     break;
 
   case 39: /* input_output_expr: CMD_READ OPEN_PAREN var CLS_PAREN SEMICOLON  */
-#line 263 "sintatic/sintatic.y"
+#line 266 "sintatic/sintatic.y"
                                                       {
                 (yyval.typeNode) = buildNode("CMD_READ_VAR");
                 (yyval.typeNode)->childNode = (yyvsp[-2].typeNode);
         }
-#line 3711 "sintatic.tab.c"
+#line 3714 "sintatic.tab.c"
     break;
 
   case 40: /* input_output_expr: CMD_WRITE OPEN_PAREN error CLS_PAREN SEMICOLON  */
-#line 267 "sintatic/sintatic.y"
+#line 270 "sintatic/sintatic.y"
                                                          {
                 (yyval.typeNode) = buildNode("SINTATIC ERR!");
         }
-#line 3719 "sintatic.tab.c"
+#line 3722 "sintatic.tab.c"
     break;
 
   case 41: /* input_output_expr: CMD_WRITELN OPEN_PAREN error CLS_PAREN SEMICOLON  */
-#line 270 "sintatic/sintatic.y"
+#line 273 "sintatic/sintatic.y"
                                                            {
                 (yyval.typeNode) = buildNode("SINTATIC ERR!");
         }
-#line 3727 "sintatic.tab.c"
+#line 3730 "sintatic.tab.c"
     break;
 
   case 42: /* input_output_expr: CMD_READ OPEN_PAREN error CLS_PAREN SEMICOLON  */
-#line 273 "sintatic/sintatic.y"
+#line 276 "sintatic/sintatic.y"
                                                         {
                 (yyval.typeNode) = buildNode("SINTATIC ERR!");
         }
-#line 3735 "sintatic.tab.c"
+#line 3738 "sintatic.tab.c"
     break;
 
   case 43: /* $@5: %empty  */
-#line 279 "sintatic/sintatic.y"
+#line 282 "sintatic/sintatic.y"
                            {
             // novo Scopo    
             Scope *newScope = buildScope("Block FOR");
@@ -3743,11 +3746,11 @@ yyreduce:
             activeScope = newScope;
             
         }
-#line 3747 "sintatic.tab.c"
+#line 3750 "sintatic.tab.c"
     break;
 
   case 44: /* iteration_expr: CMD_FOR OPEN_PAREN $@5 assign SEMICOLON expr SEMICOLON assign CLS_PAREN blockStmt  */
-#line 285 "sintatic/sintatic.y"
+#line 288 "sintatic/sintatic.y"
                                                                      {     
              (yyval.typeNode) = buildNode("for");
              (yyval.typeNode)->childNode = (yyvsp[-6].typeNode);
@@ -3761,11 +3764,11 @@ yyreduce:
              freeScope(activeScope);
              activeScope = auxScope;
         }
-#line 3765 "sintatic.tab.c"
+#line 3768 "sintatic.tab.c"
     break;
 
   case 45: /* $@6: %empty  */
-#line 301 "sintatic/sintatic.y"
+#line 304 "sintatic/sintatic.y"
                                          {
             // novo Scopo
             //     char* scopeName;
@@ -3777,11 +3780,11 @@ yyreduce:
             newScope->parentScope = activeScope; 
             activeScope = newScope;
         }
-#line 3781 "sintatic.tab.c"
+#line 3784 "sintatic.tab.c"
     break;
 
   case 46: /* condition_expr: CMD_IF OPEN_PAREN expr CLS_PAREN $@6 block_cond  */
-#line 311 "sintatic/sintatic.y"
+#line 314 "sintatic/sintatic.y"
                      {
                 (yyval.typeNode) = buildNode("if");
                 (yyval.typeNode)->childNode = (yyvsp[-3].typeNode);
@@ -3793,19 +3796,19 @@ yyreduce:
                 freeScope(activeScope);
                 activeScope = auxScope;
         }
-#line 3797 "sintatic.tab.c"
+#line 3800 "sintatic.tab.c"
     break;
 
   case 47: /* condition_expr: CMD_IF OPEN_PAREN error CLS_PAREN error  */
-#line 322 "sintatic/sintatic.y"
+#line 325 "sintatic/sintatic.y"
                                                   {
                 (yyval.typeNode) = buildNode("SINTATIC ERR!");
         }
-#line 3805 "sintatic.tab.c"
+#line 3808 "sintatic.tab.c"
     break;
 
   case 49: /* $@7: %empty  */
-#line 329 "sintatic/sintatic.y"
+#line 332 "sintatic/sintatic.y"
                                              {
             // novo Scopo    
             Scope *newScope = buildScope("Block ELSE");
@@ -3813,11 +3816,11 @@ yyreduce:
             activeScope = newScope;
 
         }
-#line 3817 "sintatic.tab.c"
+#line 3820 "sintatic.tab.c"
     break;
 
   case 50: /* block_cond: simple_complex_block_stmt CMD_ELSE $@7 simple_complex_block_stmt  */
-#line 335 "sintatic/sintatic.y"
+#line 338 "sintatic/sintatic.y"
                                     {
                 (yyval.typeNode) = buildNode("if_stmt");
                 (yyval.typeNode)->childNode = (yyvsp[-3].typeNode);
@@ -3831,54 +3834,54 @@ yyreduce:
                 freeScope(activeScope);
                 activeScope = auxScope;
         }
-#line 3835 "sintatic.tab.c"
+#line 3838 "sintatic.tab.c"
     break;
 
   case 53: /* return_stmt: CMD_RETURN SEMICOLON  */
-#line 356 "sintatic/sintatic.y"
+#line 359 "sintatic/sintatic.y"
                              {
               (yyval.typeNode) = buildNode("return");  
         }
-#line 3843 "sintatic.tab.c"
+#line 3846 "sintatic.tab.c"
     break;
 
   case 54: /* return_stmt: CMD_RETURN expr SEMICOLON  */
-#line 359 "sintatic/sintatic.y"
+#line 362 "sintatic/sintatic.y"
                                      {
                 (yyval.typeNode) = buildNode("return");  
                 (yyval.typeNode)->childNode = (yyvsp[-1].typeNode);
         }
-#line 3852 "sintatic.tab.c"
+#line 3855 "sintatic.tab.c"
     break;
 
   case 55: /* return_stmt: CMD_RETURN error SEMICOLON  */
-#line 363 "sintatic/sintatic.y"
+#line 366 "sintatic/sintatic.y"
                                      {
                 (yyval.typeNode) = buildNode("SINTATIC ERR!");
         }
-#line 3860 "sintatic.tab.c"
+#line 3863 "sintatic.tab.c"
     break;
 
   case 56: /* return_stmt: CMD_RETURN expr error  */
-#line 366 "sintatic/sintatic.y"
+#line 369 "sintatic/sintatic.y"
                                 {
                 (yyval.typeNode) = buildNode("SINTATIC ERR!");
         }
-#line 3868 "sintatic.tab.c"
+#line 3871 "sintatic.tab.c"
     break;
 
   case 57: /* $@8: %empty  */
-#line 372 "sintatic/sintatic.y"
+#line 375 "sintatic/sintatic.y"
                                                             {
                 Scope *newScope = buildScope("Block FORALL ");
                 newScope->parentScope = activeScope;
                 activeScope = newScope; 
         }
-#line 3878 "sintatic.tab.c"
+#line 3881 "sintatic.tab.c"
     break;
 
   case 58: /* set_stmt: CMD_FORALL OPEN_PAREN var IN_OP func_expr CLS_PAREN $@8 simple_complex_block_stmt  */
-#line 376 "sintatic/sintatic.y"
+#line 379 "sintatic/sintatic.y"
                                     {
                 (yyval.typeNode) = buildNode("forall");  
                 (yyval.typeNode)->childNode = (yyvsp[-5].typeNode);
@@ -3891,21 +3894,21 @@ yyreduce:
                 freeScope(activeScope);
                 activeScope = auxScope;
         }
-#line 3895 "sintatic.tab.c"
+#line 3898 "sintatic.tab.c"
     break;
 
   case 59: /* $@9: %empty  */
-#line 388 "sintatic/sintatic.y"
+#line 391 "sintatic/sintatic.y"
                                                         {
                 Scope *newScope = buildScope("Block FORALL ");
                 newScope->parentScope = activeScope;
                 activeScope = newScope; 
         }
-#line 3905 "sintatic.tab.c"
+#line 3908 "sintatic.tab.c"
     break;
 
   case 60: /* set_stmt: CMD_FORALL OPEN_PAREN var IN_OP var CLS_PAREN $@9 simple_complex_block_stmt  */
-#line 392 "sintatic/sintatic.y"
+#line 395 "sintatic/sintatic.y"
                                     {
                 (yyval.typeNode) = buildNode("forall");  
                 (yyval.typeNode)->childNode = (yyvsp[-5].typeNode);
@@ -3918,409 +3921,409 @@ yyreduce:
                 freeScope(activeScope);
                 activeScope = auxScope;
         }
-#line 3922 "sintatic.tab.c"
+#line 3925 "sintatic.tab.c"
     break;
 
   case 62: /* set_stmt: CMD_FORALL OPEN_PAREN error IN_OP error CLS_PAREN simple_complex_block_stmt  */
-#line 405 "sintatic/sintatic.y"
+#line 408 "sintatic/sintatic.y"
                                                                                       {
                 (yyval.typeNode) = buildNode("SINTATIC ERR!");
         }
-#line 3930 "sintatic.tab.c"
+#line 3933 "sintatic.tab.c"
     break;
 
   case 63: /* set_stmt: CMD_FORALL OPEN_PAREN error IN_OP func_expr CLS_PAREN error  */
-#line 408 "sintatic/sintatic.y"
+#line 411 "sintatic/sintatic.y"
                                                                       {
                 (yyval.typeNode) = buildNode("SINTATIC ERR!");
         }
-#line 3938 "sintatic.tab.c"
+#line 3941 "sintatic.tab.c"
     break;
 
   case 64: /* set_stmt: CMD_FORALL OPEN_PAREN var IN_OP error CLS_PAREN simple_complex_block_stmt  */
-#line 411 "sintatic/sintatic.y"
+#line 414 "sintatic/sintatic.y"
                                                                                     {
                 (yyval.typeNode) = buildNode("SINTATIC ERR!");
         }
-#line 3946 "sintatic.tab.c"
+#line 3949 "sintatic.tab.c"
     break;
 
   case 66: /* expr_stmt: expr error  */
-#line 417 "sintatic/sintatic.y"
+#line 420 "sintatic/sintatic.y"
                      {
                 (yyval.typeNode) = buildNode("SINTATIC ERR!");
         }
-#line 3954 "sintatic.tab.c"
+#line 3957 "sintatic.tab.c"
     break;
 
   case 69: /* assign: var ATRIBUTION expr  */
-#line 429 "sintatic/sintatic.y"
+#line 432 "sintatic/sintatic.y"
                             {
               (yyval.typeNode) = buildNode(" = ");
               (yyval.typeNode)->childNode = (yyvsp[-2].typeNode);
               (yyvsp[-2].typeNode)->brotherNode = (yyvsp[0].typeNode);
         }
-#line 3964 "sintatic.tab.c"
+#line 3967 "sintatic.tab.c"
     break;
 
   case 70: /* func_expr: ADD_FUNC OPEN_PAREN func_in_expr CLS_PAREN  */
-#line 437 "sintatic/sintatic.y"
+#line 440 "sintatic/sintatic.y"
                                                    {
                 (yyval.typeNode) = buildNode(" add ");
                 (yyval.typeNode)->childNode = (yyvsp[-1].typeNode);
         }
-#line 3973 "sintatic.tab.c"
+#line 3976 "sintatic.tab.c"
     break;
 
   case 71: /* func_expr: REMOVE_FUNC OPEN_PAREN func_in_expr CLS_PAREN  */
-#line 441 "sintatic/sintatic.y"
+#line 444 "sintatic/sintatic.y"
                                                         {
                 (yyval.typeNode) = buildNode(" remove ");
                 (yyval.typeNode)->childNode = (yyvsp[-1].typeNode);
         }
-#line 3982 "sintatic.tab.c"
+#line 3985 "sintatic.tab.c"
     break;
 
   case 72: /* func_expr: EXIST_FUNC OPEN_PAREN func_in_expr CLS_PAREN  */
-#line 445 "sintatic/sintatic.y"
+#line 448 "sintatic/sintatic.y"
                                                        {
                 (yyval.typeNode) = buildNode(" exist ");
                 (yyval.typeNode)->childNode = (yyvsp[-1].typeNode);
         }
-#line 3991 "sintatic.tab.c"
+#line 3994 "sintatic.tab.c"
     break;
 
   case 73: /* func_expr: ADD_FUNC OPEN_PAREN error CLS_PAREN  */
-#line 449 "sintatic/sintatic.y"
+#line 452 "sintatic/sintatic.y"
                                               {
              (yyval.typeNode) = buildNode("SINTATIC ERR!");   
         }
-#line 3999 "sintatic.tab.c"
+#line 4002 "sintatic.tab.c"
     break;
 
   case 74: /* func_expr: REMOVE_FUNC OPEN_PAREN error CLS_PAREN  */
-#line 452 "sintatic/sintatic.y"
+#line 455 "sintatic/sintatic.y"
                                                  {
              (yyval.typeNode) = buildNode("SINTATIC ERR!");   
         }
-#line 4007 "sintatic.tab.c"
+#line 4010 "sintatic.tab.c"
     break;
 
   case 75: /* func_expr: EXIST_FUNC OPEN_PAREN error CLS_PAREN  */
-#line 455 "sintatic/sintatic.y"
+#line 458 "sintatic/sintatic.y"
                                                 {
              (yyval.typeNode) = buildNode("SINTATIC ERR!");    
         }
-#line 4015 "sintatic.tab.c"
+#line 4018 "sintatic.tab.c"
     break;
 
   case 76: /* is_set_expr: IS_SET_FUNC OPEN_PAREN var CLS_PAREN  */
-#line 461 "sintatic/sintatic.y"
+#line 464 "sintatic/sintatic.y"
                                              {
               (yyval.typeNode) = buildNode(" is_set ");
               (yyval.typeNode)->childNode = (yyvsp[-1].typeNode);
         }
-#line 4024 "sintatic.tab.c"
+#line 4027 "sintatic.tab.c"
     break;
 
   case 77: /* is_set_expr: IS_SET_FUNC OPEN_PAREN func_expr CLS_PAREN  */
-#line 465 "sintatic/sintatic.y"
+#line 468 "sintatic/sintatic.y"
                                                      {
                 (yyval.typeNode) = buildNode(" is_set ");
                 (yyval.typeNode)->childNode = (yyvsp[-1].typeNode);
         }
-#line 4033 "sintatic.tab.c"
+#line 4036 "sintatic.tab.c"
     break;
 
   case 78: /* is_set_expr: IS_SET_FUNC OPEN_PAREN error CLS_PAREN  */
-#line 469 "sintatic/sintatic.y"
+#line 472 "sintatic/sintatic.y"
                                                  {
              (yyval.typeNode) = buildNode("SINTATIC ERR!");    
         }
-#line 4041 "sintatic.tab.c"
+#line 4044 "sintatic.tab.c"
     break;
 
   case 79: /* func_in_expr: op_or_expr IN_OP var  */
-#line 474 "sintatic/sintatic.y"
+#line 477 "sintatic/sintatic.y"
                              {
                 (yyval.typeNode) = buildNode(" IN ");
                 (yyval.typeNode)->childNode = (yyvsp[-2].typeNode);
                 (yyvsp[-2].typeNode)->brotherNode = (yyvsp[0].typeNode);
         }
-#line 4051 "sintatic.tab.c"
+#line 4054 "sintatic.tab.c"
     break;
 
   case 80: /* func_in_expr: op_or_expr IN_OP func_expr  */
-#line 479 "sintatic/sintatic.y"
+#line 482 "sintatic/sintatic.y"
                                      {
                 (yyval.typeNode) = buildNode(" IN ");
                 (yyval.typeNode)->childNode = (yyvsp[-2].typeNode);
                 (yyvsp[-2].typeNode)->brotherNode = (yyvsp[0].typeNode);
         }
-#line 4061 "sintatic.tab.c"
+#line 4064 "sintatic.tab.c"
     break;
 
   case 81: /* op_or_expr: op_or_expr OP_OR op_and_expr  */
-#line 487 "sintatic/sintatic.y"
+#line 490 "sintatic/sintatic.y"
                                      {
               (yyval.typeNode) = buildNode("or");
               (yyval.typeNode)->childNode = (yyvsp[-2].typeNode);
               (yyvsp[-2].typeNode)->brotherNode = (yyvsp[0].typeNode);
         }
-#line 4071 "sintatic.tab.c"
+#line 4074 "sintatic.tab.c"
     break;
 
   case 84: /* op_and_expr: op_and_expr OP_AND logical_expr  */
-#line 497 "sintatic/sintatic.y"
+#line 500 "sintatic/sintatic.y"
                                         {
               (yyval.typeNode) = buildNode("and");
               (yyval.typeNode)->childNode = (yyvsp[-2].typeNode);
               (yyvsp[-2].typeNode)->brotherNode = (yyvsp[0].typeNode);  
         }
-#line 4081 "sintatic.tab.c"
+#line 4084 "sintatic.tab.c"
     break;
 
   case 86: /* logical_expr: logical_expr logical_ops arithmetic_expr  */
-#line 506 "sintatic/sintatic.y"
+#line 509 "sintatic/sintatic.y"
                                                 {
              (yyval.typeNode) = (yyvsp[-1].typeNode);
              (yyvsp[-1].typeNode)->childNode = (yyvsp[-2].typeNode); 
              (yyvsp[-2].typeNode)->brotherNode = (yyvsp[0].typeNode); 
        }
-#line 4091 "sintatic.tab.c"
+#line 4094 "sintatic.tab.c"
     break;
 
   case 88: /* arithmetic_expr: arithmetic_expr adds_op mult_expr  */
-#line 515 "sintatic/sintatic.y"
+#line 518 "sintatic/sintatic.y"
                                           {
               (yyval.typeNode) = (yyvsp[-1].typeNode);
               (yyvsp[-1].typeNode)->childNode = (yyvsp[-2].typeNode);
               (yyvsp[-2].typeNode)->brotherNode = (yyvsp[0].typeNode);
         }
-#line 4101 "sintatic.tab.c"
+#line 4104 "sintatic.tab.c"
     break;
 
   case 90: /* mult_expr: mult_expr mult_ops first_term  */
-#line 524 "sintatic/sintatic.y"
+#line 527 "sintatic/sintatic.y"
                                       {
               (yyval.typeNode) = (yyvsp[-1].typeNode);
               (yyvsp[-1].typeNode)->childNode = (yyvsp[-2].typeNode);
               (yyvsp[-2].typeNode)->brotherNode = (yyvsp[0].typeNode);
         }
-#line 4111 "sintatic.tab.c"
+#line 4114 "sintatic.tab.c"
     break;
 
   case 93: /* first_term: OP_NEG term  */
-#line 534 "sintatic/sintatic.y"
+#line 537 "sintatic/sintatic.y"
                       {
               (yyval.typeNode) = buildNode(" ! ");
               (yyval.typeNode)->childNode = (yyvsp[0].typeNode);
         }
-#line 4120 "sintatic.tab.c"
+#line 4123 "sintatic.tab.c"
     break;
 
   case 94: /* first_term: adds_op term  */
-#line 538 "sintatic/sintatic.y"
+#line 541 "sintatic/sintatic.y"
                        {
               (yyval.typeNode) = (yyvsp[-1].typeNode);
               (yyvsp[-1].typeNode)->childNode = (yyvsp[0].typeNode);
         }
-#line 4129 "sintatic.tab.c"
+#line 4132 "sintatic.tab.c"
     break;
 
   case 95: /* first_term: var OPEN_PAREN list_expr CLS_PAREN  */
-#line 542 "sintatic/sintatic.y"
+#line 545 "sintatic/sintatic.y"
                                              {
                 (yyval.typeNode) = (yyvsp[-3].typeNode);
                 (yyvsp[-3].typeNode)->brotherNode = (yyvsp[-1].typeNode);
         }
-#line 4138 "sintatic.tab.c"
+#line 4141 "sintatic.tab.c"
     break;
 
   case 97: /* first_term: var OPEN_PAREN error CLS_PAREN  */
-#line 547 "sintatic/sintatic.y"
+#line 550 "sintatic/sintatic.y"
                                          {
                 (yyval.typeNode) = buildNode("SINTATIC ERR!");
         }
-#line 4146 "sintatic.tab.c"
+#line 4149 "sintatic.tab.c"
     break;
 
   case 98: /* first_term: error OPEN_PAREN CLS_PAREN  */
-#line 550 "sintatic/sintatic.y"
+#line 553 "sintatic/sintatic.y"
                                       {
                 (yyval.typeNode) = buildNode("SINTATIC ERR!");
         }
-#line 4154 "sintatic.tab.c"
+#line 4157 "sintatic.tab.c"
     break;
 
   case 101: /* term: OPEN_PAREN expr CLS_PAREN  */
-#line 558 "sintatic/sintatic.y"
+#line 561 "sintatic/sintatic.y"
                                     {
                 (yyval.typeNode) = (yyvsp[-1].typeNode);
         }
-#line 4162 "sintatic.tab.c"
+#line 4165 "sintatic.tab.c"
     break;
 
   case 102: /* term: OPEN_PAREN error CLS_PAREN  */
-#line 561 "sintatic/sintatic.y"
+#line 564 "sintatic/sintatic.y"
                                       {
                 (yyval.typeNode) = buildNode("SINTATIC ERR!");
         }
-#line 4170 "sintatic.tab.c"
+#line 4173 "sintatic.tab.c"
     break;
 
   case 103: /* logical_ops: LT_OP  */
-#line 567 "sintatic/sintatic.y"
+#line 570 "sintatic/sintatic.y"
               {
                 (yyval.typeNode) = buildNode("LT_OP");
         }
-#line 4178 "sintatic.tab.c"
+#line 4181 "sintatic.tab.c"
     break;
 
   case 104: /* logical_ops: LTE_OP  */
-#line 570 "sintatic/sintatic.y"
+#line 573 "sintatic/sintatic.y"
                   {
                 (yyval.typeNode) = buildNode("LTE_OP");
         }
-#line 4186 "sintatic.tab.c"
+#line 4189 "sintatic.tab.c"
     break;
 
   case 105: /* logical_ops: GT_OP  */
-#line 573 "sintatic/sintatic.y"
+#line 576 "sintatic/sintatic.y"
                  {
                 (yyval.typeNode) = buildNode("GT_OP");
         }
-#line 4194 "sintatic.tab.c"
+#line 4197 "sintatic.tab.c"
     break;
 
   case 106: /* logical_ops: GTE_OP  */
-#line 576 "sintatic/sintatic.y"
+#line 579 "sintatic/sintatic.y"
                   {
                 (yyval.typeNode) = buildNode("GTE_OP");
         }
-#line 4202 "sintatic.tab.c"
+#line 4205 "sintatic.tab.c"
     break;
 
   case 107: /* logical_ops: NEQ_OP  */
-#line 579 "sintatic/sintatic.y"
+#line 582 "sintatic/sintatic.y"
                   {
                 (yyval.typeNode) = buildNode("NEQ_OP");
         }
-#line 4210 "sintatic.tab.c"
+#line 4213 "sintatic.tab.c"
     break;
 
   case 108: /* logical_ops: EQUAL_OP  */
-#line 582 "sintatic/sintatic.y"
+#line 585 "sintatic/sintatic.y"
                     {
                 (yyval.typeNode) = buildNode("EQUAL_OP");
         }
-#line 4218 "sintatic.tab.c"
+#line 4221 "sintatic.tab.c"
     break;
 
   case 109: /* str_expr: STRING  */
-#line 588 "sintatic/sintatic.y"
+#line 591 "sintatic/sintatic.y"
                {
             (yyval.typeNode) = buildNode((yyvsp[0].sval));
             free((yyvsp[0].sval));
         }
-#line 4227 "sintatic.tab.c"
+#line 4230 "sintatic.tab.c"
     break;
 
   case 112: /* list_expr: error COMMA error  */
-#line 597 "sintatic/sintatic.y"
+#line 600 "sintatic/sintatic.y"
                             {
              (yyval.typeNode) = buildNode("SINTATIC ERR!");   
         }
-#line 4235 "sintatic.tab.c"
+#line 4238 "sintatic.tab.c"
     break;
 
   case 113: /* var: ID  */
-#line 603 "sintatic/sintatic.y"
+#line 606 "sintatic/sintatic.y"
          {
             (yyval.typeNode) = buildNode((yyvsp[0].sval));
             free((yyvsp[0].sval));
        }
-#line 4244 "sintatic.tab.c"
+#line 4247 "sintatic.tab.c"
     break;
 
   case 114: /* adds_op: ADD_OP  */
-#line 610 "sintatic/sintatic.y"
+#line 613 "sintatic/sintatic.y"
              {
             (yyval.typeNode) = buildNode((yyvsp[0].sval)); 
             free((yyvsp[0].sval)); 
       }
-#line 4253 "sintatic.tab.c"
+#line 4256 "sintatic.tab.c"
     break;
 
   case 115: /* mult_ops: MULT_OP  */
-#line 617 "sintatic/sintatic.y"
+#line 620 "sintatic/sintatic.y"
               {
               (yyval.typeNode) = buildNode((yyvsp[0].sval)); 
               free((yyvsp[0].sval));  
       }
-#line 4262 "sintatic.tab.c"
+#line 4265 "sintatic.tab.c"
     break;
 
   case 116: /* num_tipos: FLOAT  */
-#line 624 "sintatic/sintatic.y"
+#line 627 "sintatic/sintatic.y"
               {
               (yyval.typeNode) = buildNode((yyvsp[0].sval));
               free((yyvsp[0].sval));
         }
-#line 4271 "sintatic.tab.c"
+#line 4274 "sintatic.tab.c"
     break;
 
   case 117: /* num_tipos: INT  */
-#line 628 "sintatic/sintatic.y"
+#line 631 "sintatic/sintatic.y"
               {
               (yyval.typeNode) = buildNode((yyvsp[0].sval));
               free((yyvsp[0].sval));
         }
-#line 4280 "sintatic.tab.c"
+#line 4283 "sintatic.tab.c"
     break;
 
   case 118: /* num_tipos: EMPTY  */
-#line 632 "sintatic/sintatic.y"
+#line 635 "sintatic/sintatic.y"
                 {
               (yyval.typeNode) = buildNode("EMPTY");
         }
-#line 4288 "sintatic.tab.c"
+#line 4291 "sintatic.tab.c"
     break;
 
   case 119: /* tipos: TYPE_INT  */
-#line 638 "sintatic/sintatic.y"
+#line 641 "sintatic/sintatic.y"
                  {
              (yyval.typeNode) = buildNode("TYPE_INT");
         }
-#line 4296 "sintatic.tab.c"
+#line 4299 "sintatic.tab.c"
     break;
 
   case 120: /* tipos: TYPE_FLOAT  */
-#line 641 "sintatic/sintatic.y"
+#line 644 "sintatic/sintatic.y"
                      {
               (yyval.typeNode) = buildNode("TYPE_FLOAT");
         }
-#line 4304 "sintatic.tab.c"
+#line 4307 "sintatic.tab.c"
     break;
 
   case 121: /* tipos: TYPE_SET  */
-#line 644 "sintatic/sintatic.y"
+#line 647 "sintatic/sintatic.y"
                     {
               (yyval.typeNode) = buildNode("TYPE_SET");
         }
-#line 4312 "sintatic.tab.c"
+#line 4315 "sintatic.tab.c"
     break;
 
   case 122: /* tipos: TYPE_ELEM  */
-#line 647 "sintatic/sintatic.y"
+#line 650 "sintatic/sintatic.y"
                     {
              (yyval.typeNode) = buildNode("TYPE_ELEM");
         }
-#line 4320 "sintatic.tab.c"
+#line 4323 "sintatic.tab.c"
     break;
 
 
-#line 4324 "sintatic.tab.c"
+#line 4327 "sintatic.tab.c"
 
       default: break;
     }
@@ -4545,7 +4548,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 651 "sintatic/sintatic.y"
+#line 654 "sintatic/sintatic.y"
 
 
 
@@ -4562,10 +4565,11 @@ int main(int argc, char *argv[]) {
      yyin = fopen(argv[1], "r");
      activeScope = buildScope("GLOBAL SCOPE");  
      yyparse();
-
+     
      showScope(activeScope);
      freeScope(activeScope);
      showTree(origin, 0); 
+     errorMain(isMain);
 
      clearTree(origin);
     

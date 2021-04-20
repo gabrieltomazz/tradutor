@@ -20,6 +20,7 @@
   extern FILE *yyin;
   int line = 1;
   int column = 0;
+  int isMain = 0;
   
   TreeNodes* origin;
   Scope* activeScope;
@@ -154,7 +155,7 @@ func_declaration:
             $1->brotherNode = $2;
             $2->brotherNode = $5;
             $5->brotherNode = $7;
-            
+
             // fecha o Scopo
             showScope(activeScope);
             Scope *auxScope = activeScope->parentScope;
@@ -165,7 +166,9 @@ func_declaration:
             // insere simbolos no escopo atual
             Symbol *aux = createItem("FUNCTION", "main", line);
             insertItem(activeScope, aux); 
-
+            
+            // main 
+            isMain = isMain + 1;
             // novo Scopo
             Scope *newScope = buildScope("main"); 
             newScope->parentScope = activeScope; 
@@ -664,10 +667,11 @@ int main(int argc, char *argv[]) {
      yyin = fopen(argv[1], "r");
      activeScope = buildScope("GLOBAL SCOPE");  
      yyparse();
-
+     
      showScope(activeScope);
      freeScope(activeScope);
      showTree(origin, 0); 
+     errorMain(isMain);
 
      clearTree(origin);
     

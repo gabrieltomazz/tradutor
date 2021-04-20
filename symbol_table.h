@@ -26,5 +26,6 @@ Symbol *createItem(char *type, char *id, int line);
 Scope  *buildScope(char *scopeName);
 void showScope(Scope *scope);
 void freeScope(Scope *scope);
+void errorMain(int);
 
 #endif
