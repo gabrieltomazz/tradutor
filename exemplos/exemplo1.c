@@ -1,16 +1,27 @@
-int funca( int x, float y){
+int funca( int i, float y, elem h){
 
     for (i = 3; !(add(1 in i)) && 3 < 4; i = i + 1) {
         set b;
         b = 1;
     }
 
-    elems bfds;
+    elem bfds;
     write("as");
 }
 
-int main(int a, int s){
-    float h, b;
+int abc( int x, float s){
+
+    forall(x in s) {
+        int acc;
+        float accf;
+        acc = acc + x;
+        accf = accf + x;
+    }
+    writeln("aaa");
+}
+
+int main(){
+    float h, b, a;
     a = -5.4;
 
     is_set(a);
@@ -23,19 +34,7 @@ int main(int a, int s){
         a = -b + 3;
     }
 
-    func(a, b);
+    funca(a, b, h);
 
     return a;
-}
-
-int abc( int j, float u){
-
-    forall(x in s) {
-        int acc;
-        float accf;
-        acc = acc + x;
-        accf = accf + x;
-    }
-
-    write("aqui");
 }

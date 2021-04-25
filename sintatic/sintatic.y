@@ -19,11 +19,15 @@
 
   extern FILE *yyin;
   int line = 1;
-  int column = 0;
+  int column = 1;
   int isMain = 0;
+  int numFuncArgs = 0;
+  int numListArgs = 0;      
+  char* typeManyDeclaration;
   
   TreeNodes* origin;
   Scope* activeScope;
+  Symbol* funcAux;
 %}
 
 %union
@@ -74,8 +78,10 @@
 %type <typeNode> mult_ops
 %type <typeNode> set_stmt
 %type <typeNode> many_declaration
+%type <typeNode> write_commands
+%type <typeNode> char_expr
 
-%token <sval> ID INT FLOAT ADD_OP MULT_OP STRING
+%token <sval> ID INT FLOAT ADD_OP MULT_OP STRING CHARACTER
 
 %token <token> MAIN EMPTY
 %token <token> TYPE_INT TYPE_FLOAT TYPE_ELEM TYPE_SET   
@@ -98,19 +104,24 @@ program:
 
 list_declaration: 
         list_declaration main_declaration {
-            $1->brotherNode = $2;
+            TreeNodes *aux = $1;
+            while(aux->brotherNode != NULL) {
+                aux = aux->brotherNode;
+            }
+            aux->brotherNode = $2;
         }
-        | main_declaration 
+        | main_declaration  
         | error  { $$ = buildNode("error program"); }
 ;
 
 main_declaration: 
         func_declaration 
-        | var_declaration 
+        | var_declaration  
 ;
 
 var_declaration: 
         tipos var {
+            verifyReDeclaration(activeScope, $var->value, line, column);
             Symbol *aux = createItem($tipos->value, $var->value, line);
             insertItem(activeScope, aux);
         } SEMICOLON {
@@ -118,31 +129,38 @@ var_declaration:
             $$->childNode = $1; 
             $1->brotherNode = $2;  
         }
-        | tipos var COMMA many_declaration {
+        | tipos var COMMA { typeManyDeclaration = $tipos->value; } many_declaration {
+            verifyReDeclaration(activeScope, $var->value, line, column);    
             Symbol *aux = createItem($tipos->value, $2->value, line);
             insertItem(activeScope, aux);
-            Symbol *aux2 = createItem($tipos->value, $4->value, line);
-            insertItem(activeScope, aux2);
+
         } SEMICOLON {
             $$ = buildNode("var_declaration");
             $$->childNode = $1; 
             $1->brotherNode = $2;  
-            $2->brotherNode = $4; 
+            $2->brotherNode = $5; 
         }
         | error SEMICOLON { $$ = buildNode("SINTATIC ERR");}
 ;
 
 many_declaration: 
-        var COMMA
-        | var;
+        var COMMA many_declaration {
+                $1->brotherNode = $3;
+                verifyReDeclaration(activeScope, $var->value, line, column);
+                Symbol *aux2 = createItem(typeManyDeclaration, $var->value, line);
+                insertItem(activeScope, aux2);
+        }
+        | var {
+                verifyReDeclaration(activeScope, $var->value, line, column);
+                Symbol *aux3 = createItem(typeManyDeclaration, $var->value, line);
+                insertItem(activeScope, aux3);
+        };
 ;
 
 func_declaration: 
         tipos var OPEN_PAREN {
-            
             // criar o simbolos no escopo atual
-            Symbol *aux = createItem("FUNCTION", $var->value, line);
-            insertItem(activeScope, aux); 
+            funcAux = createItem("FUNCTION", $var->value, line);
             
             // novo Scopo
             Scope *newScope = buildScope($var->value);
@@ -155,6 +173,11 @@ func_declaration:
             $1->brotherNode = $2;
             $2->brotherNode = $5;
             $5->brotherNode = $7;
+            
+            funcAux->numArgs = numFuncArgs;
+            insertItem(activeScope->parentScope, funcAux); 
+            funcAux = NULL;
+            numFuncArgs = 0;
 
             // fecha o Scopo
             showScope(activeScope);
@@ -164,9 +187,8 @@ func_declaration:
         }
         | tipos MAIN OPEN_PAREN {
             // insere simbolos no escopo atual
-            Symbol *aux = createItem("FUNCTION", "main", line);
-            insertItem(activeScope, aux); 
-            
+            funcAux = createItem("FUNCTION", "main", line);
+             
             // main 
             isMain = isMain + 1;
             // novo Scopo
@@ -175,12 +197,16 @@ func_declaration:
             activeScope = newScope;
 
         } list_args[args] CLS_PAREN blockStmt[block] {
+          
+            funcAux->numArgs = numFuncArgs;
+            insertItem(activeScope->parentScope, funcAux); 
+            funcAux = NULL;
+            numFuncArgs = 0;   
             $$ = buildNode("func_declaration_main");   
             $$->childNode = $tipos;
             $tipos->brotherNode = $args;
             $args->brotherNode = $block;
-            
-            // printf("Chegou scope: %s \n", activeScope->scopeName);
+
             showScope(activeScope);
             Scope *auxScope = activeScope->parentScope;
             freeScope(activeScope);
@@ -203,12 +229,17 @@ list_args:
                 $1->brotherNode = $2;
                 $2->brotherNode = $4;
                 
+                numFuncArgs = numFuncArgs + 1;
                 // cria simbolos no escopo atual
+                verifyReDeclaration(activeScope, $var->value, line, column);
                 Symbol *aux = createItem($tipos->value, $var->value, line);
                 insertItem(activeScope, aux); 
                 
         }
         | tipos var {
+
+                numFuncArgs = numFuncArgs + 1;
+                verifyReDeclaration(activeScope, $var->value, line, column);
                 $$ = buildNode("list_args"); 
                 $$->childNode = $1;
                 $1->brotherNode = $2;
@@ -222,7 +253,10 @@ list_args:
 ;
 
 blockStmt: 
-        OP_CUR_BRACKET list_statements CLS_CUR_BRACKET {
+        OP_CUR_BRACKET  CLS_CUR_BRACKET {
+                $$ = buildNode("empty block"); 
+        }
+        | OP_CUR_BRACKET list_statements CLS_CUR_BRACKET {
                 $$ = $2;
         }
 ;
@@ -247,35 +281,35 @@ stmt:
 ;
 
 input_output_expr: 
-        CMD_WRITE OPEN_PAREN str_expr CLS_PAREN SEMICOLON {
-                $$ = buildNode("CMD_WRITE_STR");
+        write_commands OPEN_PAREN str_expr CLS_PAREN SEMICOLON {
+                $1->childNode = $3;
+        }
+        | write_commands OPEN_PAREN expr CLS_PAREN SEMICOLON {
                 $$->childNode = $3;
         }
-        | CMD_WRITE OPEN_PAREN expr CLS_PAREN SEMICOLON {
-                $$ = buildNode("CMD_WRITE_EXPR");
-                $$->childNode = $3;
-        }
-        | CMD_WRITELN OPEN_PAREN str_expr CLS_PAREN SEMICOLON {
-                $$ = buildNode("CMD_WRITELN_STR");
-                $$->childNode = $3;
-        }
-        | CMD_WRITELN OPEN_PAREN expr CLS_PAREN SEMICOLON {
-                $$ = buildNode("CMD_WRITELN_EXPR");
+        | write_commands OPEN_PAREN char_expr CLS_PAREN SEMICOLON {
                 $$->childNode = $3;
         }
         | CMD_READ OPEN_PAREN var CLS_PAREN SEMICOLON {
+                verifyUnDeclaration(activeScope, $var->value, line, column);
                 $$ = buildNode("CMD_READ_VAR");
                 $$->childNode = $3;
         }
-        | CMD_WRITE OPEN_PAREN error CLS_PAREN SEMICOLON {
-                $$ = buildNode("SINTATIC ERR!");
-        }
-        | CMD_WRITELN OPEN_PAREN error CLS_PAREN SEMICOLON {
+        | write_commands OPEN_PAREN error CLS_PAREN SEMICOLON {
                 $$ = buildNode("SINTATIC ERR!");
         }
         | CMD_READ OPEN_PAREN error CLS_PAREN SEMICOLON {
                 $$ = buildNode("SINTATIC ERR!");
         }
+;
+
+write_commands:
+      CMD_WRITE  {
+              $$ = buildNode("CMD_WRITE_STR");
+      }
+      | CMD_WRITELN {
+              $$ = buildNode("CMD_WRITELN_STR");
+      }
 ;
 
 iteration_expr:
@@ -285,7 +319,7 @@ iteration_expr:
             newScope->parentScope = activeScope; 
             activeScope = newScope;
             
-        } assign SEMICOLON expr SEMICOLON assign CLS_PAREN blockStmt {     
+        } assign SEMICOLON expr SEMICOLON assign CLS_PAREN simple_complex_block_stmt {     
              $$ = buildNode("for");
              $$->childNode = $4;
              $4->brotherNode = $6;
@@ -373,6 +407,7 @@ return_stmt:
 
 set_stmt: 
         CMD_FORALL OPEN_PAREN var IN_OP func_expr CLS_PAREN {
+                verifyUnDeclaration(activeScope, $var->value, line, column);
                 Scope *newScope = buildScope("Block FORALL ");
                 newScope->parentScope = activeScope;
                 activeScope = newScope; 
@@ -389,6 +424,8 @@ set_stmt:
                 activeScope = auxScope;
         }
         | CMD_FORALL OPEN_PAREN var IN_OP var CLS_PAREN {
+                verifyUnDeclaration(activeScope, $3->value, line, column);
+                verifyUnDeclaration(activeScope, $5->value, line, column);
                 Scope *newScope = buildScope("Block FORALL ");
                 newScope->parentScope = activeScope;
                 activeScope = newScope; 
@@ -430,8 +467,9 @@ expr:
 
 assign:
         var ATRIBUTION expr {
+              verifyUnDeclaration(activeScope, $var->value, line, column);
               $$ = buildNode(" = ");
-              $$->childNode = $1;
+              $$->childNode = $1; 
               $1->brotherNode = $3;
         }
 ;
@@ -462,6 +500,7 @@ func_expr:
 
 is_set_expr :
         IS_SET_FUNC OPEN_PAREN var CLS_PAREN {
+              verifyUnDeclaration(activeScope, $var->value, line, column);
               $$ = buildNode(" is_set ");
               $$->childNode = $3;
         }
@@ -475,6 +514,7 @@ is_set_expr :
 
 func_in_expr:
         op_or_expr IN_OP var {
+                verifyUnDeclaration(activeScope, $var->value, line, column);
                 $$ = buildNode(" IN ");
                 $$->childNode = $1;
                 $1->brotherNode = $3;
@@ -484,6 +524,11 @@ func_in_expr:
                 $$->childNode = $1;
                 $1->brotherNode = $3;
         }
+        /* | func_expr IN_OP op_or_expr {
+                $$ = buildNode(" IN ");
+                $$->childNode = $1;
+                $1->brotherNode = $3;
+        } */
 ;
 
 op_or_expr: 
@@ -543,10 +588,13 @@ first_term:
               $1->childNode = $2;
         }
         | var OPEN_PAREN list_expr CLS_PAREN {
+                verifyFuncDeclaration(activeScope, $var->value, line, column, numListArgs);
                 $$ = $1;
                 $1->brotherNode = $3;
         }
-        | var OPEN_PAREN CLS_PAREN 
+        | var OPEN_PAREN CLS_PAREN {
+                verifyFuncDeclaration(activeScope, $var->value, line, column, 0);
+        }
         | var OPEN_PAREN error CLS_PAREN {
                 $$ = buildNode("SINTATIC ERR!");
         }
@@ -556,7 +604,9 @@ first_term:
 ; 
 
 term: 
-        var 
+        var {
+                verifyUnDeclaration(activeScope, $var->value, line, column);
+        }
         | num_tipos
         | OPEN_PAREN expr CLS_PAREN {
                 $$ = $2;
@@ -590,13 +640,24 @@ logical_ops:
 str_expr:
         STRING {
             $$ = buildNode($1);
-            free($STRING);
+            free($1);
+        }
+;
+
+char_expr:
+        CHARACTER {
+            $$ = buildNode($1);
+            free($1);
         }
 ;
 
 list_expr:
-        expr COMMA list_expr
-        | expr 
+        expr COMMA list_expr {
+                numListArgs = numListArgs + 1;
+        }
+        | expr {
+                numListArgs = numListArgs + 1;
+        }
         | error COMMA error {
              $$ = buildNode("SINTATIC ERR!");   
         }
@@ -671,11 +732,13 @@ int main(int argc, char *argv[]) {
      showScope(activeScope);
      freeScope(activeScope);
      showTree(origin, 0); 
+     
+     // erros
      errorMain(isMain);
 
      clearTree(origin);
     
-    fclose(yyin);
-    yylex_destroy();
-    return 0;
+     fclose(yyin);
+     yylex_destroy();
+     return 0;
 }

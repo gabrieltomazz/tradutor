@@ -62,40 +62,41 @@ extern int yydebug;
     ADD_OP = 263,                  /* ADD_OP  */
     MULT_OP = 264,                 /* MULT_OP  */
     STRING = 265,                  /* STRING  */
-    MAIN = 266,                    /* MAIN  */
-    EMPTY = 267,                   /* EMPTY  */
-    TYPE_INT = 268,                /* TYPE_INT  */
-    TYPE_FLOAT = 269,              /* TYPE_FLOAT  */
-    TYPE_ELEM = 270,               /* TYPE_ELEM  */
-    TYPE_SET = 271,                /* TYPE_SET  */
-    CMD_IF = 272,                  /* CMD_IF  */
-    CMD_FOR = 273,                 /* CMD_FOR  */
-    CMD_FORALL = 274,              /* CMD_FORALL  */
-    GT_OP = 275,                   /* GT_OP  */
-    LT_OP = 276,                   /* LT_OP  */
-    LTE_OP = 277,                  /* LTE_OP  */
-    GTE_OP = 278,                  /* GTE_OP  */
-    NEQ_OP = 279,                  /* NEQ_OP  */
-    EQUAL_OP = 280,                /* EQUAL_OP  */
-    ADD_FUNC = 281,                /* ADD_FUNC  */
-    IS_SET_FUNC = 282,             /* IS_SET_FUNC  */
-    REMOVE_FUNC = 283,             /* REMOVE_FUNC  */
-    EXIST_FUNC = 284,              /* EXIST_FUNC  */
-    IN_OP = 285,                   /* IN_OP  */
-    OP_OR = 286,                   /* OP_OR  */
-    OP_AND = 287,                  /* OP_AND  */
-    OP_NEG = 288,                  /* OP_NEG  */
-    ATRIBUTION = 289,              /* ATRIBUTION  */
-    CMD_WRITE = 290,               /* CMD_WRITE  */
-    CMD_WRITELN = 291,             /* CMD_WRITELN  */
-    CMD_READ = 292,                /* CMD_READ  */
-    CMD_RETURN = 293,              /* CMD_RETURN  */
-    SEMICOLON = 294,               /* SEMICOLON  */
-    COMMA = 295,                   /* COMMA  */
-    OPEN_PAREN = 296,              /* OPEN_PAREN  */
-    CLS_PAREN = 297,               /* CLS_PAREN  */
-    OP_CUR_BRACKET = 298,          /* OP_CUR_BRACKET  */
-    CLS_CUR_BRACKET = 299          /* CLS_CUR_BRACKET  */
+    CHARACTER = 266,               /* CHARACTER  */
+    MAIN = 267,                    /* MAIN  */
+    EMPTY = 268,                   /* EMPTY  */
+    TYPE_INT = 269,                /* TYPE_INT  */
+    TYPE_FLOAT = 270,              /* TYPE_FLOAT  */
+    TYPE_ELEM = 271,               /* TYPE_ELEM  */
+    TYPE_SET = 272,                /* TYPE_SET  */
+    CMD_IF = 273,                  /* CMD_IF  */
+    CMD_FOR = 274,                 /* CMD_FOR  */
+    CMD_FORALL = 275,              /* CMD_FORALL  */
+    GT_OP = 276,                   /* GT_OP  */
+    LT_OP = 277,                   /* LT_OP  */
+    LTE_OP = 278,                  /* LTE_OP  */
+    GTE_OP = 279,                  /* GTE_OP  */
+    NEQ_OP = 280,                  /* NEQ_OP  */
+    EQUAL_OP = 281,                /* EQUAL_OP  */
+    ADD_FUNC = 282,                /* ADD_FUNC  */
+    IS_SET_FUNC = 283,             /* IS_SET_FUNC  */
+    REMOVE_FUNC = 284,             /* REMOVE_FUNC  */
+    EXIST_FUNC = 285,              /* EXIST_FUNC  */
+    IN_OP = 286,                   /* IN_OP  */
+    OP_OR = 287,                   /* OP_OR  */
+    OP_AND = 288,                  /* OP_AND  */
+    OP_NEG = 289,                  /* OP_NEG  */
+    ATRIBUTION = 290,              /* ATRIBUTION  */
+    CMD_WRITE = 291,               /* CMD_WRITE  */
+    CMD_WRITELN = 292,             /* CMD_WRITELN  */
+    CMD_READ = 293,                /* CMD_READ  */
+    CMD_RETURN = 294,              /* CMD_RETURN  */
+    SEMICOLON = 295,               /* SEMICOLON  */
+    COMMA = 296,                   /* COMMA  */
+    OPEN_PAREN = 297,              /* OPEN_PAREN  */
+    CLS_PAREN = 298,               /* CLS_PAREN  */
+    OP_CUR_BRACKET = 299,          /* OP_CUR_BRACKET  */
+    CLS_CUR_BRACKET = 300          /* CLS_CUR_BRACKET  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -104,7 +105,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 30 "sintatic/sintatic.y"
+#line 34 "sintatic/sintatic.y"
 
   struct Token {
     char *body;
@@ -113,7 +114,7 @@ union YYSTYPE
 
   struct TreeNodes* typeNode;
 
-#line 117 "sintatic.tab.h"
+#line 118 "sintatic.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

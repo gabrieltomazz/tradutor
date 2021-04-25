@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+Symbol *itemFuncAux;
 
 void showTable(Symbol *table) {
 
@@ -44,26 +45,13 @@ Symbol *createItem(char *type, char *id, int line) {
     item->id = strdup(id);
     item->type = strdup(type);
     item->line = line;
+    if(!strcmp(type, "FUNCTION")){
+        item->isFunction = 1;
+    }else{
+        item->isFunction = 0;
+    }
+    item->numArgs = 0;
     return item;
-    
-    // if(!*table){
-    //     (*table) = (Symbol *)malloc(sizeof(Symbol));
-    //     (*table)->next = NULL;
-    //     // (*table)->scope = NULL;
-    //     (*table)->id = strdup(id);
-    //     (*table)->type = strdup(type);
-    //     (*table)->line = line;
-    // }else{
-
-        
-        // Symbol *aux = *table;
-
-        // while(aux->next != NULL){
-        //     aux = aux->next;
-        // }
-        // aux->next = item;
- 
-    // }
 }
 
 void insertItem(Scope *activeScope, Symbol* aux){
@@ -108,7 +96,7 @@ void showScope(Scope *scope) {
     
         while (aux)
         {
-            printf(" |   TYPE: %-12s | ID: %-12s  | line: %-3d \n", aux->type, aux->id, aux->line );      
+            printf(" |   TYPE: %-12s | ID: %-12s | line: %-3d | ISFUNCTION: %-4s | NUMARGS: %-2d \n", aux->type, aux->id, aux->line, aux->isFunction == 1 ? "YES":"NO", aux->numArgs );      
             aux = aux->next;
         }
     }
@@ -131,6 +119,107 @@ void errorMain(int isMain){
              printf("\n");
      }
 }
+
+void verifyReDeclaration(Scope *scope, char* var, int line, int column) {
+    int aux;
+    aux = isDeclaredInScope(scope, var, 0);
+
+    if(aux == 1){
+        printf(" ----------------------------- SEMANTIC ERROR ---------------------------------------------- \n");
+        printf(" Error: Redeclaration Variable: %s - at line: %d column: %d                                                         \n", var ,line ,column);
+        printf(" ------------------------------------------------------------------------------------------- \n");
+        printf("\n");
+    }
+
+}
+
+void verifyUnDeclaration(Scope *scope, char* var, int line, int column) {
+    int aux;
+    aux = isDeclared(scope, var, 0);
+    // printf("verifyUnDeclaration: %s \n", var);
+    if(aux == 0){
+        printf(" ----------------------------- SEMANTIC ERROR ---------------------------------------------- \n");
+        printf(" Error: Undeclared Variable: %s - at line: %d column: %d                                                         \n", var ,line ,column);
+        printf(" ------------------------------------------------------------------------------------------- \n");
+        printf("\n");
+    }
+}
+
+void verifyFuncDeclaration(Scope *scope, char* var, int line, int column, int numArgsFunc) {
+    int aux;
+    aux = isDeclaredFunc(scope, var, 0);
+
+    if(aux == 0){
+        printf(" ----------------------------- SEMANTIC ERROR ---------------------------------------------- \n");
+        printf(" Error: Undeclared Function: %s - at line: %d column: %d                                                         \n", var ,line ,column);
+        printf(" ------------------------------------------------------------------------------------------- \n");
+        printf("\n");
+    }else{
+        if(itemFuncAux->numArgs != numArgsFunc){
+            printf(" ----------------------------- SEMANTIC ERROR ---------------------------------------------- \n");
+            if(numArgsFunc > itemFuncAux->numArgs){
+                printf(" Error: too many arguments to function %s - at line: %d column: %d                                                         \n", var ,line ,column);
+            }else{
+                printf(" Error: too few arguments to function %s - at line: %d column: %d                                                         \n", var ,line ,column);
+            }
+            printf(" ------------------------------------------------------------------------------------------- \n");
+            printf("\n");
+        }
+    }
+
+}
+
+int isDeclaredInScope(Scope *scope, char* var, int declared) {
+
+    Symbol *item;
+
+    for(item = scope->listSymbol; item != NULL; item = item->next){
+        int comp = strcmp(item->id, var);
+        if(!comp){
+            return 1;
+        }
+    }
+
+    // if(scope->parentScope) declared = isDeclared(scope->parentScope, var, 0);
+
+    return declared;
+}
+
+int isDeclared(Scope *scope, char* var, int declared) {
+
+    Symbol *item;
+
+    for(item = scope->listSymbol; item != NULL; item = item->next){
+        int comp = strcmp(item->id, var);
+        // printf(" varivael %s: \n", item->id);
+        // printf(" item da lista %s: \n", var);
+        if(!comp){
+            return 1;
+        }
+    }
+
+    if(scope->parentScope) declared = isDeclared(scope->parentScope, var, 0);
+
+    return declared;
+}
+
+int isDeclaredFunc(Scope *scope, char* var, int declared) {
+
+    Symbol *item;
+
+    for(item = scope->listSymbol; item != NULL; item = item->next){
+        int comp = strcmp(item->id, var);
+        if(!comp && item->isFunction == 1){
+            itemFuncAux = item;
+            return 1;
+        }
+    }
+
+    if(scope->parentScope) declared = isDeclaredFunc(scope->parentScope, var, 0);
+
+    return declared;
+}
+
 
 void freeScope(Scope *scope){
 

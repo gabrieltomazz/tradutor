@@ -3,23 +3,17 @@
   #include <math.h>
   #include <string.h>
   #include "sintatic.tab.h"
-  // int yyerror(char *errormsg);
-//   int yyparse();
 
   extern int line;
   extern int column;
 
   void fillToken(int line, int column) {
-        // yylval.token.line = line;
-        // yylval.token.column = column;
         yylval.token.body = strdup(yytext);
 
         yylval.sval = malloc(strlen(yytext));
         strncpy(yylval.sval, yytext, strlen(yytext));
   }
   void fill(int line, int column) {
-        // yylval.token.line = line;
-        // yylval.token.column = column;
         yylval.token.body = strdup(yytext);
   }
 %}
@@ -33,8 +27,8 @@ MULT_OP "*"|"/"
 OP_OR  "||" 
 OP_AND &&
 OP_NEG !
-STRING \"[^\"]*\"|'[^']*'
-/* CHARACTER ['].[']|[']\\n[']|[']\\r[']|[']\\t['] */
+STRING \"[^\"]*\"
+CHARACTER ['][^'][']|[']\\r[']|[']\\n[']|[']\\t[']
 ADD_FUNC add
 IS_SET_FUNC is_set
 REMOVE_FUNC remove
@@ -68,8 +62,8 @@ OP_CUR_BRACKET "{"
 CLS_CUR_BRACKET "}"
 %%
 
-"//".*\n            {line++;column=0;}
-\n		              {line++;column=0;}
+"//".*\n            {line++;column=1;}
+\n		              {line++;column=1;}
 {MAIN}              {column += yyleng; fill(line, column); return (MAIN);}
 {EMPTY}             {column += yyleng; fill(line, column); return (EMPTY);}
 {TYPE_INT}          {column += yyleng; fill(line, column); return (TYPE_INT);}
@@ -122,6 +116,10 @@ CLS_CUR_BRACKET "}"
 {STRING}			      {column += yyleng; 
                       fillToken(line, column);
                       return(STRING); 
+                    }
+{CHARACTER}			    {column += yyleng; 
+                      fillToken(line, column);
+                      return(CHARACTER); 
                     }
 {SEMICOLON}         {column += yyleng; fill(line, column); return (SEMICOLON) ;}
 {COMMA}             {column += yyleng; fill(line, column); return (COMMA) ;}
