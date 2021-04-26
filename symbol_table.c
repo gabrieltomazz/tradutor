@@ -180,8 +180,6 @@ int isDeclaredInScope(Scope *scope, char* var, int declared) {
         }
     }
 
-    // if(scope->parentScope) declared = isDeclared(scope->parentScope, var, 0);
-
     return declared;
 }
 
@@ -191,8 +189,6 @@ int isDeclared(Scope *scope, char* var, int declared) {
 
     for(item = scope->listSymbol; item != NULL; item = item->next){
         int comp = strcmp(item->id, var);
-        // printf(" varivael %s: \n", item->id);
-        // printf(" item da lista %s: \n", var);
         if(!comp){
             return 1;
         }
@@ -220,6 +216,47 @@ int isDeclaredFunc(Scope *scope, char* var, int declared) {
     return declared;
 }
 
+int findTypeItem(Scope *scope, char* var){
+
+    Symbol *aux;
+    int tipo = 99;
+    aux = findItem(scope, var);
+
+    if(aux == NULL){
+        tipo = 99;
+    }else if(strcmp(aux->type, "TYPE_INT") == 0){
+        tipo = 0;
+    }else if(strcmp(aux->type, "TYPE_FLOAT") == 0){
+        tipo = 1;
+    }else if(strcmp(aux->type, "TYPE_SET") == 0){
+        tipo = 2;
+    }else if(strcmp(aux->type, "TYPE_ELEM") == 0){
+        tipo = 3;
+    }else{
+        tipo = 99;  
+    }
+
+    return tipo;
+}
+
+Symbol *findItem(Scope *scope, char* var) {
+
+    Symbol *item;
+    Symbol *aux = NULL;
+
+    for(item = scope->listSymbol; item != NULL; item = item->next){
+        int comp = strcmp(item->id, var);
+        if(!comp){
+            aux = item;
+            return aux;
+        }
+    }
+
+    if(scope->parentScope) aux = findItem(scope->parentScope, var);
+
+    return aux;
+
+}
 
 void freeScope(Scope *scope){
 

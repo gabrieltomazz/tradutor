@@ -35,5 +35,7 @@ void verifyFuncDeclaration(Scope *scope, char* var, int line, int column, int nu
 int isDeclared(Scope *scope, char* var, int declared);
 int isDeclaredInScope(Scope *scope, char* var, int declared);
 int isDeclaredFunc(Scope *scope, char* var, int declared);
+int findTypeItem(Scope *scope, char* var);
+Symbol *findItem(Scope *scope, char* var);
 
 #endif

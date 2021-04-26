@@ -96,7 +96,7 @@
 
 program: 
         list_declaration {
-            $$ = buildNode("program");
+            $$ = buildNode("program", 99);
             $$->childNode = $1;
             origin = $$;
         }
@@ -111,7 +111,7 @@ list_declaration:
             aux->brotherNode = $2;
         }
         | main_declaration  
-        | error  { $$ = buildNode("error program"); }
+        | error  { $$ = buildNode("error program", 99); }
 ;
 
 main_declaration: 
@@ -125,7 +125,7 @@ var_declaration:
             Symbol *aux = createItem($tipos->value, $var->value, line);
             insertItem(activeScope, aux);
         } SEMICOLON {
-            $$ = buildNode("var_declaration");
+            $$ = buildNode("var_declaration",99);
             $$->childNode = $1; 
             $1->brotherNode = $2;  
         }
@@ -135,12 +135,12 @@ var_declaration:
             insertItem(activeScope, aux);
 
         } SEMICOLON {
-            $$ = buildNode("var_declaration");
+            $$ = buildNode("var_declaration",99);
             $$->childNode = $1; 
             $1->brotherNode = $2;  
             $2->brotherNode = $5; 
         }
-        | error SEMICOLON { $$ = buildNode("SINTATIC ERR");}
+        | error SEMICOLON { $$ = buildNode("SINTATIC ERR",10);}
 ;
 
 many_declaration: 
@@ -168,7 +168,7 @@ func_declaration:
             activeScope = newScope;
             
         } list_args CLS_PAREN  blockStmt {
-            $$ = buildNode("func_declaration");   
+            $$ = buildNode("func_declaration",99);   
             $$->childNode = $1;
             $1->brotherNode = $2;
             $2->brotherNode = $5;
@@ -202,7 +202,7 @@ func_declaration:
             insertItem(activeScope->parentScope, funcAux); 
             funcAux = NULL;
             numFuncArgs = 0;   
-            $$ = buildNode("func_declaration_main");   
+            $$ = buildNode("func_declaration_main", 99);   
             $$->childNode = $tipos;
             $tipos->brotherNode = $args;
             $args->brotherNode = $block;
@@ -214,17 +214,17 @@ func_declaration:
             
         }
         | tipos var OPEN_PAREN error CLS_PAREN blockStmt {
-                $$ = buildNode("SINTATIC ERR!");
+                $$ = buildNode("SINTATIC ERR!", 10);
         }
         | tipos MAIN OPEN_PAREN error CLS_PAREN blockStmt[block] {
-                $$ = buildNode("SINTATIC ERR!");
+                $$ = buildNode("SINTATIC ERR!", 10);
         }
 
 ;
 
 list_args:
         tipos var COMMA list_args {
-                $$ = buildNode("list_args");  
+                $$ = buildNode("list_args", 99);  
                 $$->childNode = $1;
                 $1->brotherNode = $2;
                 $2->brotherNode = $4;
@@ -240,7 +240,7 @@ list_args:
 
                 numFuncArgs = numFuncArgs + 1;
                 verifyReDeclaration(activeScope, $var->value, line, column);
-                $$ = buildNode("list_args"); 
+                $$ = buildNode("list_args", 99); 
                 $$->childNode = $1;
                 $1->brotherNode = $2;
 
@@ -248,13 +248,13 @@ list_args:
                 insertItem(activeScope, aux); 
         }
         | %empty {
-                $$ = buildNode("no_args"); 
+                $$ = buildNode("no_args", 99); 
         } 
 ;
 
 blockStmt: 
         OP_CUR_BRACKET  CLS_CUR_BRACKET {
-                $$ = buildNode("empty block"); 
+                $$ = buildNode("empty block", 99); 
         }
         | OP_CUR_BRACKET list_statements CLS_CUR_BRACKET {
                 $$ = $2;
@@ -292,23 +292,23 @@ input_output_expr:
         }
         | CMD_READ OPEN_PAREN var CLS_PAREN SEMICOLON {
                 verifyUnDeclaration(activeScope, $var->value, line, column);
-                $$ = buildNode("CMD_READ_VAR");
+                $$ = buildNode("CMD_READ_VAR", 99);
                 $$->childNode = $3;
         }
         | write_commands OPEN_PAREN error CLS_PAREN SEMICOLON {
-                $$ = buildNode("SINTATIC ERR!");
+                $$ = buildNode("SINTATIC ERR!", 10);
         }
         | CMD_READ OPEN_PAREN error CLS_PAREN SEMICOLON {
-                $$ = buildNode("SINTATIC ERR!");
+                $$ = buildNode("SINTATIC ERR!", 10);
         }
 ;
 
 write_commands:
       CMD_WRITE  {
-              $$ = buildNode("CMD_WRITE_STR");
+              $$ = buildNode("CMD_WRITE_STR", 99);
       }
       | CMD_WRITELN {
-              $$ = buildNode("CMD_WRITELN_STR");
+              $$ = buildNode("CMD_WRITELN_STR", 99);
       }
 ;
 
@@ -320,7 +320,7 @@ iteration_expr:
             activeScope = newScope;
             
         } assign SEMICOLON expr SEMICOLON assign CLS_PAREN simple_complex_block_stmt {     
-             $$ = buildNode("for");
+             $$ = buildNode("for", 99);
              $$->childNode = $4;
              $4->brotherNode = $6;
              $6->brotherNode = $8;
@@ -346,7 +346,7 @@ condition_expr:
             newScope->parentScope = activeScope; 
             activeScope = newScope;
         } block_cond {
-                $$ = buildNode("if");
+                $$ = buildNode("if", 99);
                 $$->childNode = $3;
                 $3->brotherNode = $6;
 
@@ -357,7 +357,7 @@ condition_expr:
                 activeScope = auxScope;
         }
         | CMD_IF OPEN_PAREN error CLS_PAREN error {
-                $$ = buildNode("SINTATIC ERR!");
+                $$ = buildNode("SINTATIC ERR!", 10);
         }
 ;
 
@@ -370,10 +370,10 @@ block_cond:
             activeScope = newScope;
 
         } simple_complex_block_stmt {
-                $$ = buildNode("if_stmt");
+                $$ = buildNode("if_stmt", 99);
                 $$->childNode = $1;
 
-                $$->brotherNode = buildNode("else");
+                $$->brotherNode = buildNode("else", 99);
                 $$->brotherNode->childNode = $4;
 
                 // fecha o Scopo
@@ -391,17 +391,17 @@ simple_complex_block_stmt:
 
 return_stmt:
         CMD_RETURN SEMICOLON {
-              $$ = buildNode("return");  
+              $$ = buildNode("return", 99);  
         }
         | CMD_RETURN expr SEMICOLON  {
-                $$ = buildNode("return");  
+                $$ = buildNode("return", $2->type);  
                 $$->childNode = $2;
         }
         | CMD_RETURN error SEMICOLON {
-                $$ = buildNode("SINTATIC ERR!");
+                $$ = buildNode("SINTATIC ERR!", 10);
         }
         | CMD_RETURN expr error {
-                $$ = buildNode("SINTATIC ERR!");
+                $$ = buildNode("SINTATIC ERR!", 10);
         }
 ;
 
@@ -412,7 +412,7 @@ set_stmt:
                 newScope->parentScope = activeScope;
                 activeScope = newScope; 
         } simple_complex_block_stmt {
-                $$ = buildNode("forall");  
+                $$ = buildNode("forall", 99);  
                 $$->childNode = $3;
                 $3->brotherNode = $5;
                 $5->brotherNode = $8;
@@ -430,7 +430,7 @@ set_stmt:
                 newScope->parentScope = activeScope;
                 activeScope = newScope; 
         } simple_complex_block_stmt {
-                $$ = buildNode("forall");  
+                $$ = buildNode("forall", 99);  
                 $$->childNode = $3;
                 $3->brotherNode = $5;
                 $5->brotherNode = $8;
@@ -443,19 +443,19 @@ set_stmt:
         }
         | is_set_expr SEMICOLON 
         | CMD_FORALL OPEN_PAREN error IN_OP error CLS_PAREN simple_complex_block_stmt {
-                $$ = buildNode("SINTATIC ERR!");
+                $$ = buildNode("SINTATIC ERR!", 10);
         }
         | CMD_FORALL OPEN_PAREN error IN_OP func_expr CLS_PAREN error {
-                $$ = buildNode("SINTATIC ERR!");
+                $$ = buildNode("SINTATIC ERR!", 10);
         }
         | CMD_FORALL OPEN_PAREN var IN_OP error CLS_PAREN simple_complex_block_stmt {
-                $$ = buildNode("SINTATIC ERR!");
+                $$ = buildNode("SINTATIC ERR!", 10);
         }
 ;
 expr_stmt:
         expr SEMICOLON 
         | expr error {
-                $$ = buildNode("SINTATIC ERR!");
+                $$ = buildNode("SINTATIC ERR!", 10);
         }
 
 ;
@@ -468,59 +468,64 @@ expr:
 assign:
         var ATRIBUTION expr {
               verifyUnDeclaration(activeScope, $var->value, line, column);
-              $$ = buildNode(" = ");
+              $$ = buildNode(" = ", $1->type);
               $$->childNode = $1; 
-              $1->brotherNode = $3;
+              if($1->type != $3->type) {
+                $1->brotherNode = buildNode(castToSpecificType($1->type, $3->type),$1->type);
+                $1->brotherNode->childNode = $3;  
+              }else{
+                $1->brotherNode = $3;
+              }
         }
 ;
 
 func_expr: 
         ADD_FUNC OPEN_PAREN func_in_expr CLS_PAREN {
-                $$ = buildNode(" add ");
+                $$ = buildNode(" add ", 99);
                 $$->childNode = $3;
         }
         | REMOVE_FUNC OPEN_PAREN func_in_expr CLS_PAREN {
-                $$ = buildNode(" remove ");
+                $$ = buildNode(" remove ", 99);
                 $$->childNode = $3;
         }
         | EXIST_FUNC OPEN_PAREN func_in_expr CLS_PAREN {
-                $$ = buildNode(" exist ");
+                $$ = buildNode(" exist ", 99);
                 $$->childNode = $3;
         }
         | ADD_FUNC OPEN_PAREN error CLS_PAREN {
-             $$ = buildNode("SINTATIC ERR!");   
+             $$ = buildNode("SINTATIC ERR!", 10);   
         }
         | REMOVE_FUNC OPEN_PAREN error CLS_PAREN {
-             $$ = buildNode("SINTATIC ERR!");   
+             $$ = buildNode("SINTATIC ERR!", 10);   
         } 
         | EXIST_FUNC OPEN_PAREN error CLS_PAREN {
-             $$ = buildNode("SINTATIC ERR!");    
+             $$ = buildNode("SINTATIC ERR!", 10);    
         }
 ;
 
 is_set_expr :
         IS_SET_FUNC OPEN_PAREN var CLS_PAREN {
               verifyUnDeclaration(activeScope, $var->value, line, column);
-              $$ = buildNode(" is_set ");
+              $$ = buildNode(" is_set ", 99);
               $$->childNode = $3;
         }
         | IS_SET_FUNC OPEN_PAREN func_expr CLS_PAREN {
-                $$ = buildNode(" is_set ");
+                $$ = buildNode(" is_set ", 99);
                 $$->childNode = $3;
         }
         | IS_SET_FUNC OPEN_PAREN error CLS_PAREN {
-             $$ = buildNode("SINTATIC ERR!");    
+             $$ = buildNode("SINTATIC ERR!", 10);    
         }
 
 func_in_expr:
         op_or_expr IN_OP var {
                 verifyUnDeclaration(activeScope, $var->value, line, column);
-                $$ = buildNode(" IN ");
+                $$ = buildNode(" IN ", 99);
                 $$->childNode = $1;
                 $1->brotherNode = $3;
         }
         | op_or_expr IN_OP func_expr {
-                $$ = buildNode(" IN ");
+                $$ = buildNode(" IN ", 99);
                 $$->childNode = $1;
                 $1->brotherNode = $3;
         }
@@ -532,10 +537,29 @@ func_in_expr:
 ;
 
 op_or_expr: 
-        op_or_expr OP_OR op_and_expr {
-              $$ = buildNode("or");
-              $$->childNode = $1;
-              $1->brotherNode = $3;
+        op_or_expr OP_OR op_and_expr {  
+              $$ = buildNode("or", 0);
+              if($1->type != 0 && $3->type != 0){
+                $$->childNode = buildNode(castToInt(0, $1->type), 0);
+                $$->childNode->childNode = $1;
+                TreeNodes *aux = buildNode(castToInt(0, $3->type), 0);
+                $$->childNode->brotherNode = aux;
+                aux->childNode = $3;    
+
+              }else if($1->type != 0){
+                $$->childNode = buildNode(castToInt(0, $1->type), 0);
+                $$->childNode->childNode = $1;
+                $$->childNode->brotherNode = $3;        
+
+              }else if($3->type != 0){
+                $$->childNode = $1;
+                $1->brotherNode = buildNode(castToInt(0, $3->type), 0);
+                $1->brotherNode->childNode = $3; 
+              }else{
+                $$->childNode = $1;
+                $1->brotherNode = $3;
+              }
+              
         }
         | op_and_expr 
         | func_in_expr
@@ -543,36 +567,112 @@ op_or_expr:
 
 op_and_expr:
         op_and_expr OP_AND logical_expr {
-              $$ = buildNode("and");
-              $$->childNode = $1;
-              $1->brotherNode = $3;  
+              $$ = buildNode("and", 0);
+              if($1->type != 0 && $3->type != 0){
+                $$->childNode = buildNode(castToInt(0, $1->type), 0);
+                $$->childNode->childNode = $1;
+                TreeNodes *aux = buildNode(castToInt(0, $3->type), 0);
+                $$->childNode->brotherNode = aux;
+                aux->childNode = $3;    
+
+              }else if($1->type != 0){
+                $$->childNode = buildNode(castToInt(0, $1->type), 0);
+                $$->childNode->childNode = $1;
+                $$->childNode->brotherNode = $3;        
+
+              }else if($3->type != 0){
+                $$->childNode = $1;
+                $1->brotherNode = buildNode(castToInt(0, $3->type), 0);
+                $1->brotherNode->childNode = $3; 
+              }else{
+                $$->childNode = $1;
+                $1->brotherNode = $3;
+              }
         }
         | logical_expr 
 ;
 
 logical_expr:
        logical_expr logical_ops arithmetic_expr {
-             $$ = $2;
-             $2->childNode = $1; 
-             $1->brotherNode = $3; 
+              // or and e logico sempre int 
+              $$ = $2;
+              //      $2->childNode = $1; 
+              //      $1->brotherNode = $3;
+              if($1->type != 0 && $3->type != 0){
+                $$->childNode = buildNode(castToInt(0, $1->type), 0);
+                $$->childNode->childNode = $1;
+                TreeNodes *aux = buildNode(castToInt(0, $3->type), 0);
+                $$->childNode->brotherNode = aux;
+                aux->childNode = $3;    
+
+              }else if($1->type != 0){
+                $$->childNode = buildNode(castToInt(0, $1->type), 0);
+                $$->childNode->childNode = $1;
+                $$->childNode->brotherNode = $3;        
+
+              }else if($3->type != 0){
+                $$->childNode = $1;
+                $1->brotherNode = buildNode(castToInt(0, $3->type), 0);
+                $1->brotherNode->childNode = $3; 
+              }else{
+                $$->childNode = $1;
+                $1->brotherNode = $3;
+              } 
        } 
        | arithmetic_expr
 ;
 
 arithmetic_expr: 
         arithmetic_expr adds_op mult_expr {
-              $$ = $2;
-              $2->childNode = $1;
-              $1->brotherNode = $3;
+              if($1->type != $3->type) {
+                $$ = $2;
+                $2->type = typeNodo($1->type, $3->type);
+
+                // faz o cast a esquerda ou a direita
+                if( ($1->type == 0 && ($3->type == 1 || $3->type == 3)) || ($1->type == 1 && $3->type == 3) ){
+                    $2->childNode = buildNode(castType($1->type, $3->type), typeNodo($1->type, $3->type));
+                    $2->childNode->childNode = $1;
+                    $2->brotherNode = $3;
+                }else{
+                    $2->childNode = $1;
+                    $1->brotherNode = buildNode(castType($1->type, $3->type), typeNodo($1->type, $3->type));
+                    $1->brotherNode->childNode = $3;
+                }
+                
+              }else {
+                $$ = $2;
+                $2->type = $1->type;
+                $$->childNode = $2;
+                $2->childNode = $1;
+                $1->brotherNode = $3;
+              }
         }
         | mult_expr
 ;
 
 mult_expr:
         mult_expr mult_ops first_term {
-              $$ = $2;
-              $2->childNode = $1;
-              $1->brotherNode = $3;
+              if($1->type != $3->type) {
+                $$ = $2;
+                $2->type = typeNodo($1->type, $3->type);
+
+                // faz o cast a esquerda ou a direita
+                if(($1->type == 0 && ($3->type == 1 || $3->type == 3)) || ($1->type == 1 && $3->type == 3)){
+                    $2->childNode = buildNode(castType($1->type, $3->type), typeNodo($1->type, $3->type));
+                    $2->childNode->childNode = $1;
+                    $2->brotherNode = $3;
+                }else {
+                    $2->childNode = $1;
+                    $1->brotherNode = buildNode(castType($1->type, $3->type), typeNodo($1->type, $3->type));
+                    $1->brotherNode->childNode = $3;
+                }
+              }else{
+                $$ = $2;
+                $2->type = $1->type;
+                $$->childNode = $2; 
+                $2->childNode = $1;
+                $1->brotherNode = $3;          
+              }
         }
         | first_term
 ;
@@ -580,7 +680,7 @@ mult_expr:
 first_term: 
         term
         | OP_NEG term {
-              $$ = buildNode(" ! ");
+              $$ = buildNode(" ! ", 99);
               $$->childNode = $2;
         } 
         | adds_op term {
@@ -589,17 +689,19 @@ first_term:
         }
         | var OPEN_PAREN list_expr CLS_PAREN {
                 verifyFuncDeclaration(activeScope, $var->value, line, column, numListArgs);
+                numListArgs = 0;
                 $$ = $1;
+                $1->type = $3->type;
                 $1->brotherNode = $3;
         }
         | var OPEN_PAREN CLS_PAREN {
                 verifyFuncDeclaration(activeScope, $var->value, line, column, 0);
         }
         | var OPEN_PAREN error CLS_PAREN {
-                $$ = buildNode("SINTATIC ERR!");
+                $$ = buildNode("SINTATIC ERR!", 10);
         }
         | error OPEN_PAREN  CLS_PAREN {
-                $$ = buildNode("SINTATIC ERR!");
+                $$ = buildNode("SINTATIC ERR!", 10);
         }
 ; 
 
@@ -607,46 +709,46 @@ term:
         var {
                 verifyUnDeclaration(activeScope, $var->value, line, column);
         }
-        | num_tipos
+        | num_tipos 
         | OPEN_PAREN expr CLS_PAREN {
                 $$ = $2;
         }
         | OPEN_PAREN error  CLS_PAREN {
-                $$ = buildNode("SINTATIC ERR!");
+                $$ = buildNode("SINTATIC ERR!", 10);
         }
 ;
 
 logical_ops: 
         LT_OP {
-                $$ = buildNode("LT_OP");
+                $$ = buildNode("LT_OP", 99);
         }
         |  LTE_OP {
-                $$ = buildNode("LTE_OP");
+                $$ = buildNode("LTE_OP", 99);
         }  
         |  GT_OP {
-                $$ = buildNode("GT_OP");
+                $$ = buildNode("GT_OP", 99);
         } 
         |  GTE_OP {
-                $$ = buildNode("GTE_OP");
+                $$ = buildNode("GTE_OP", 99);
         }
         |  NEQ_OP {
-                $$ = buildNode("NEQ_OP");
+                $$ = buildNode("NEQ_OP", 99);
         }
         |  EQUAL_OP {
-                $$ = buildNode("EQUAL_OP");
+                $$ = buildNode("EQUAL_OP", 99);
         }
 ;
 
 str_expr:
         STRING {
-            $$ = buildNode($1);
+            $$ = buildNode($1, 99);
             free($1);
         }
 ;
 
 char_expr:
         CHARACTER {
-            $$ = buildNode($1);
+            $$ = buildNode($1, 99);
             free($1);
         }
 ;
@@ -659,57 +761,57 @@ list_expr:
                 numListArgs = numListArgs + 1;
         }
         | error COMMA error {
-             $$ = buildNode("SINTATIC ERR!");   
+             $$ = buildNode("SINTATIC ERR!", 10);   
         }
 ;
 
 var:
       ID {
-            $$ = buildNode($1);
+            $$ = buildNode($1, findTypeItem(activeScope,$1));
             free($1);
        } 
 ;
 
 adds_op:
       ADD_OP {
-            $$ = buildNode($1); 
+            $$ = buildNode($1, 99); 
             free($1); 
       } 
 ;
 
 mult_ops:
       MULT_OP {
-              $$ = buildNode($1); 
+              $$ = buildNode($1, 99); 
               free($1);  
       }
 ;
 
 num_tipos: 
         FLOAT {
-              $$ = buildNode($1);
+              $$ = buildNode($1, 1);
               free($1);
         }
         | INT {
-              $$ = buildNode($1);
+              $$ = buildNode($1, 0);
               free($1);
         }
         | EMPTY {
-              $$ = buildNode("EMPTY");
+              $$ = buildNode("EMPTY", 99);
         }
 ;
 
 tipos: 
         TYPE_INT {
-             $$ = buildNode("TYPE_INT");
+             $$ = buildNode("TYPE_INT", 0);
         }    
         | TYPE_FLOAT {
-              $$ = buildNode("TYPE_FLOAT");
+              $$ = buildNode("TYPE_FLOAT", 1);
         }
         | TYPE_SET  {
-              $$ = buildNode("TYPE_SET");
+              $$ = buildNode("TYPE_SET", 2);
         } 
         | TYPE_ELEM {
-             $$ = buildNode("TYPE_ELEM");
+             $$ = buildNode("TYPE_ELEM", 3);
         }
 ;
 %%

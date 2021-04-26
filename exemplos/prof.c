@@ -2,29 +2,30 @@ int i;
 
 int fib(int i){
 
-    if (i == 1) return 1;
+    // if (1 > 1.0) return 1;
 
-    else if (i == 2) return 1;
+    // else if (1.5 || i) return 1;
 
-    else return fib(i-1) + fib(i-2);
+    // else 
+    return fib(i-1.0) + fib(i-2.0);
 
 }
 
 int main() {
 
-    int i;
+    int i, c, d;
 
     read(i);
 
-    if (i < 0) write('e');
+    // if (i < 0) write('e');
 
-    else {
+    // else {
 
         i = fib(i);
         write("O resultado é:");
         writeln(i);
 
-    }
+   // }
 
     return 0;
 
