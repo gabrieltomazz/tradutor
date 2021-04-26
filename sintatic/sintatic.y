@@ -159,25 +159,24 @@ many_declaration:
 
 func_declaration: 
         tipos var OPEN_PAREN {
-            // criar o simbolos no escopo atual
-            funcAux = createItem("FUNCTION", $var->value, line);
-            
             // novo Scopo
             Scope *newScope = buildScope($var->value);
             newScope->parentScope = activeScope; 
             activeScope = newScope;
+        
+        } list_args {
+            // criar o simbolos no escopo atual
+            Symbol *aux  = createItem("FUNCTION", $var->value, line);
+            aux->numArgs = numFuncArgs;
+            insertItem(activeScope->parentScope, aux); 
+            numFuncArgs = 0;
             
-        } list_args CLS_PAREN  blockStmt {
+        } CLS_PAREN blockStmt {
             $$ = buildNode("func_declaration",99);   
             $$->childNode = $1;
             $1->brotherNode = $2;
             $2->brotherNode = $5;
-            $5->brotherNode = $7;
-            
-            funcAux->numArgs = numFuncArgs;
-            insertItem(activeScope->parentScope, funcAux); 
-            funcAux = NULL;
-            numFuncArgs = 0;
+            $5->brotherNode = $8;
 
             // fecha o Scopo
             showScope(activeScope);
@@ -186,22 +185,21 @@ func_declaration:
             activeScope = auxScope;
         }
         | tipos MAIN OPEN_PAREN {
-            // insere simbolos no escopo atual
-            funcAux = createItem("FUNCTION", "main", line);
-             
-            // main 
-            isMain = isMain + 1;
             // novo Scopo
             Scope *newScope = buildScope("main"); 
             newScope->parentScope = activeScope; 
             activeScope = newScope;
+        } list_args[args] {
+            // insere simbolos no escopo atual
+            Symbol *aux = createItem("FUNCTION", "main", line);
+            aux->numArgs = numFuncArgs;
+            insertItem(activeScope->parentScope, aux); 
+            numFuncArgs = 0;  
 
-        } list_args[args] CLS_PAREN blockStmt[block] {
-          
-            funcAux->numArgs = numFuncArgs;
-            insertItem(activeScope->parentScope, funcAux); 
-            funcAux = NULL;
-            numFuncArgs = 0;   
+            // main 
+            isMain = isMain + 1;
+
+        } CLS_PAREN blockStmt[block] {            
             $$ = buildNode("func_declaration_main", 99);   
             $$->childNode = $tipos;
             $tipos->brotherNode = $args;
@@ -394,7 +392,10 @@ return_stmt:
               $$ = buildNode("return", 99);  
         }
         | CMD_RETURN expr SEMICOLON  {
+
                 $$ = buildNode("return", $2->type);  
+                findTypeOfReturnFunc(activeScope);
+                // if( findTypeOfReturnFunc(activeScope) != $2->type) ;
                 $$->childNode = $2;
         }
         | CMD_RETURN error SEMICOLON {

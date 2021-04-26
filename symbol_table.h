@@ -37,5 +37,7 @@ int isDeclaredInScope(Scope *scope, char* var, int declared);
 int isDeclaredFunc(Scope *scope, char* var, int declared);
 int findTypeItem(Scope *scope, char* var);
 Symbol *findItem(Scope *scope, char* var);
+int findTypeOfReturnFunc(Scope *scope);
+Symbol *findReturnFunc(Scope *scope, char* var);
 
 #endif

@@ -258,6 +258,38 @@ Symbol *findItem(Scope *scope, char* var) {
 
 }
 
+int findTypeOfReturnFunc(Scope *scope){
+
+    Symbol *aux;
+    int tipo = 99;
+    aux = findReturnFunc(scope->parentScope, scope->scopeName);
+    if(aux != NULL){
+        printf("retorno %s \n", aux->id);
+        tipo = findTypeItem(scope->parentScope, aux->id);
+        printf("Achou o tipo %d \n", tipo);
+    }else{
+        return 10;
+    }
+
+    return tipo;
+}
+
+Symbol *findReturnFunc(Scope *scope, char* var){
+    Symbol *item;
+    Symbol *aux = NULL;
+    for(item = scope->listSymbol; item != NULL; item = item->next){
+        int comp = strcmp(item->id, var);
+        if(!comp && item->isFunction == 1){
+            aux = item;
+            return aux;
+        }
+    }
+
+    if(scope->parentScope) aux = findReturnFunc(scope->parentScope, scope->scopeName);
+
+    return aux;
+}
+
 void freeScope(Scope *scope){
 
     if(!scope) {
