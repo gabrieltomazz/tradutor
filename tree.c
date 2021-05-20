@@ -11,6 +11,7 @@ TreeNodes* buildNode(char *value, int type) {
   treeBranch->type = type;
   treeBranch->brotherNode = NULL;
   treeBranch->childNode = NULL;
+  treeBranch->registrador = -1;
   
   return treeBranch;
 }
@@ -19,14 +20,14 @@ void clearTree(TreeNodes *branch) {
   if(!branch) {
     return;
   }
-  
+  free(branch->value);
   if(branch->brotherNode){
     clearTree(branch->brotherNode);
   }
   if(branch->childNode) {
     clearTree(branch->childNode);
   }
-  free(branch->value);
+  
   free(branch);
 
 }
@@ -38,14 +39,14 @@ void showTree(TreeNodes *branch, int depth) {
 
   if(depth == 0) {
     printf("\n < ------------------- Starting -> Sintatic Tree ------------------- >\n");
-    printf(" <%s>  type: %d \n", branch->value, branch->type);
+    printf(" <%s> \n", branch->value);
   } else {
 
     for(int i = 0; i < depth; i++){
       printf(" | ");
     }
 
-    printf(" <%s> ty %d ", branch->value , branch->type);
+    printf(" <%s> ", branch->value);
 
   }
 
@@ -63,32 +64,6 @@ void showTree(TreeNodes *branch, int depth) {
 
 }
 
-void readExpr(TreeNodes *aux) {
-  // while(aux != NULL) {
-  //   printf(" Tipo, Valor: %s \n",aux->value);
-  //   if(aux->brotherNode != NULL) {
-  //         readExpr(aux->brotherNode);
-  //         // aux = aux->brotherNode;
-  //   }else{
-  //         readExpr(aux->childNode);
-  //         // aux = aux->childNode;                 
-  //   }
-    
-  // }
-
-  while(aux != NULL) {
-    printf(" Tipo:%d , Valor: %s \n",aux->type, aux->value);
-    if(aux->brotherNode != NULL) {
-          if(aux->childNode){
-            readExpr(aux->childNode);
-          }
-          aux = aux->brotherNode;
-    }else{
-          aux = aux->childNode;                 
-    }
-    
-  }
-}
 char* castType( int type1, int type2) {
 
   // 0:int 1:float 2:set 3:elem, 10:error, 99:empty;

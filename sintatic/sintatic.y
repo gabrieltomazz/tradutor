@@ -12,6 +12,7 @@
 
   #include "tree.h"
   #include "symbol_table.h"
+  #include "tac.h"
 
   extern int yylex();
   extern int yylex_destroy();
@@ -22,8 +23,12 @@
   int column = 1;
   int isMain = 0;
   int numFuncArgs = 0;
-  int numListArgs = 0;      
+  int numListArgs = 0;   
+  int registrador = 0; 
+  int globalError = 0;  
   char* typeManyDeclaration;
+  char* threeAddress;
+  char* table;
   
   TreeNodes* origin;
   Scope* activeScope;
@@ -111,7 +116,7 @@ list_declaration:
             aux->brotherNode = $2;
         }
         | main_declaration  
-        | error  { $$ = buildNode("error program", 99); }
+        | error  { $$ = buildNode("error program", 99); globalError= globalError+1; }
 ;
 
 main_declaration: 
@@ -121,18 +126,35 @@ main_declaration:
 
 var_declaration: 
         tipos var {
-            verifyReDeclaration(activeScope, $var->value, line, column);
-            Symbol *aux = createItem($tipos->value, $var->value, line);
+            int declr;
+            declr = verifyReDeclaration(activeScope, $var->value, line, column);
+            if(declr == 1){
+                printf(" tipos var ");
+                globalError = globalError + 1;
+            }
+            Symbol *aux = createItem($tipos->value, $var->value, line, 0);
+            aux->registrador = registrador;
+            aux->regis_tipo = "$";
             insertItem(activeScope, aux);
+            registrador = registrador + 1;
+               
         } SEMICOLON {
             $$ = buildNode("var_declaration",99);
             $$->childNode = $1; 
             $1->brotherNode = $2;  
         }
         | tipos var COMMA { typeManyDeclaration = $tipos->value; } many_declaration {
-            verifyReDeclaration(activeScope, $var->value, line, column);    
-            Symbol *aux = createItem($tipos->value, $2->value, line);
+            int declr;
+            declr = verifyReDeclaration(activeScope, $var->value, line, column);
+            if(declr == 1){
+                    printf(" tipos var COMMA ");
+                    globalError = globalError + 1;
+            } 
+            Symbol *aux = createItem($tipos->value, $2->value, line, 0);
+            aux->registrador = registrador;
+            aux->regis_tipo = "$";
             insertItem(activeScope, aux);
+            registrador = registrador + 1;
 
         } SEMICOLON {
             $$ = buildNode("var_declaration",99);
@@ -140,20 +162,37 @@ var_declaration:
             $1->brotherNode = $2;  
             $2->brotherNode = $5; 
         }
-        | error SEMICOLON { $$ = buildNode("SINTATIC ERR",10);}
+        | error SEMICOLON { $$ = buildNode("SINTATIC ERR",10); globalError= globalError+1;}
 ;
 
 many_declaration: 
         var COMMA many_declaration {
                 $1->brotherNode = $3;
-                verifyReDeclaration(activeScope, $var->value, line, column);
-                Symbol *aux2 = createItem(typeManyDeclaration, $var->value, line);
+                int declr;
+                declr = verifyReDeclaration(activeScope, $var->value, line, column);
+                if(declr == 1){
+                    printf(" var COMMA many_declaration ");    
+                    globalError = globalError + 1;
+                } 
+
+                Symbol *aux2 = createItem(typeManyDeclaration, $var->value, line, 0);
+                aux2->registrador = registrador;
+                aux2->regis_tipo = "$";
                 insertItem(activeScope, aux2);
+                registrador =  registrador+1;
         }
         | var {
-                verifyReDeclaration(activeScope, $var->value, line, column);
-                Symbol *aux3 = createItem(typeManyDeclaration, $var->value, line);
+                int declr;
+                declr = verifyReDeclaration(activeScope, $var->value, line, column);
+                if(declr == 1){
+                    printf(" var ");  
+                    globalError = globalError + 1;
+                } 
+                Symbol *aux3 = createItem(typeManyDeclaration, $var->value, line, 0);
+                aux3->registrador = registrador;
+                aux3->regis_tipo = "$";
                 insertItem(activeScope, aux3);
+                registrador =  registrador+1;
         };
 ;
 
@@ -163,10 +202,13 @@ func_declaration:
             Scope *newScope = buildScope($var->value);
             newScope->parentScope = activeScope; 
             activeScope = newScope;
+
+            threeAddress = alocar_memoria(threeAddress);
+            sprintf(threeAddress + strlen(threeAddress), "%s:\n", $var->value);
         
         } list_args {
             // criar o simbolos no escopo atual
-            Symbol *aux  = createItem("FUNCTION", $var->value, line);
+            Symbol *aux  = createItem($tipos->value, $var->value, line, 1);
             aux->numArgs = numFuncArgs;
             insertItem(activeScope->parentScope, aux); 
             numFuncArgs = 0;
@@ -189,9 +231,12 @@ func_declaration:
             Scope *newScope = buildScope("main"); 
             newScope->parentScope = activeScope; 
             activeScope = newScope;
+
+            threeAddress = alocar_memoria(threeAddress);
+            sprintf(threeAddress + strlen(threeAddress), "%s:\n", "main");
         } list_args[args] {
             // insere simbolos no escopo atual
-            Symbol *aux = createItem("FUNCTION", "main", line);
+            Symbol *aux = createItem($tipos->value, "main", line, 1);
             aux->numArgs = numFuncArgs;
             insertItem(activeScope->parentScope, aux); 
             numFuncArgs = 0;  
@@ -213,9 +258,11 @@ func_declaration:
         }
         | tipos var OPEN_PAREN error CLS_PAREN blockStmt {
                 $$ = buildNode("SINTATIC ERR!", 10);
+                globalError= globalError+1;
         }
         | tipos MAIN OPEN_PAREN error CLS_PAREN blockStmt[block] {
                 $$ = buildNode("SINTATIC ERR!", 10);
+                globalError= globalError+1;
         }
 
 ;
@@ -229,21 +276,35 @@ list_args:
                 
                 numFuncArgs = numFuncArgs + 1;
                 // cria simbolos no escopo atual
-                verifyReDeclaration(activeScope, $var->value, line, column);
-                Symbol *aux = createItem($tipos->value, $var->value, line);
+                int declr;
+                declr = verifyReDeclaration(activeScope, $var->value, line, column);
+                if(declr == 1){
+                    printf(" tipos var COMMA list_args ");  
+                    globalError = globalError + 1;
+                }
+                Symbol *aux = createItem($tipos->value, $var->value, line, 0);
+                aux->registrador = registrador;
+                aux->regis_tipo = "#"; 
                 insertItem(activeScope, aux); 
-                
+                registrador = registrador+1;                
         }
         | tipos var {
-
+                int declr;
                 numFuncArgs = numFuncArgs + 1;
-                verifyReDeclaration(activeScope, $var->value, line, column);
+                declr = verifyReDeclaration(activeScope, $var->value, line, column);
+                if(declr == 1){
+                    printf(" tipos var ");      
+                    globalError = globalError + 1;
+                }
                 $$ = buildNode("list_args", 99); 
                 $$->childNode = $1;
                 $1->brotherNode = $2;
 
-                Symbol *aux = createItem($tipos->value, $var->value, line);
+                Symbol *aux = createItem($tipos->value, $var->value, line, 0);
+                aux->registrador = registrador;
+                aux->regis_tipo = "#"; 
                 insertItem(activeScope, aux); 
+                registrador = registrador+1;
         }
         | %empty {
                 $$ = buildNode("no_args", 99); 
@@ -281,23 +342,63 @@ stmt:
 input_output_expr: 
         write_commands OPEN_PAREN str_expr CLS_PAREN SEMICOLON {
                 $1->childNode = $3;
+                
+                threeAddress = alocar_memoria(threeAddress);
+                sprintf(threeAddress + strlen(threeAddress), "mov $%d, &str_char%d  \n", registrador, $3->registrador);
+                
+                threeAddress = alocar_memoria(threeAddress);
+                sprintf(threeAddress + strlen(threeAddress), "param $%d  \n",registrador);
+                
+                threeAddress = alocar_memoria(threeAddress);
+                if(strcmp($1->value,"CMD_WRITE_STR") == 0) {
+                        sprintf(threeAddress + strlen(threeAddress), "call write_str, 1  \n");
+                }else {
+                        sprintf(threeAddress + strlen(threeAddress), "call writeln_str, 1 \n"); 
+                }
+
+                registrador = registrador+1;
+                
         }
         | write_commands OPEN_PAREN expr CLS_PAREN SEMICOLON {
                 $$->childNode = $3;
+                        
+                threeAddress = alocar_memoria(threeAddress);
+                if($expr->registrador == -1){
+                        Symbol *auxVar = findItem(activeScope, $expr->value);
+                        if(auxVar != NULL ){ 
+                            if(strcmp($1->value,"CMD_WRITE_STR") == 0) {
+                                sprintf(threeAddress + strlen(threeAddress), "print $%d // print \n", auxVar->registrador);
+                            }else {
+                                sprintf(threeAddress + strlen(threeAddress), "println $%d // print \n", auxVar->registrador); 
+                            }       
+                        } 
+                }else{
+                        if(strcmp($1->value,"CMD_WRITE_STR") == 0) {
+                             sprintf(threeAddress + strlen(threeAddress), "print $%d // print \n", $expr->registrador);
+                        }else {
+                              sprintf(threeAddress + strlen(threeAddress), "println $%d // print \n", $expr->registrador); 
+                        } 
+                }
         }
         | write_commands OPEN_PAREN char_expr CLS_PAREN SEMICOLON {
                 $$->childNode = $3;
         }
         | CMD_READ OPEN_PAREN var CLS_PAREN SEMICOLON {
-                verifyUnDeclaration(activeScope, $var->value, line, column);
+                int undeclr;
+                undeclr = verifyUnDeclaration(activeScope, $var->value, line, column);
+                if(undeclr == 0){
+                    globalError = globalError + 1; 
+                }
                 $$ = buildNode("CMD_READ_VAR", 99);
                 $$->childNode = $3;
         }
         | write_commands OPEN_PAREN error CLS_PAREN SEMICOLON {
                 $$ = buildNode("SINTATIC ERR!", 10);
+                globalError= globalError+1;
         }
         | CMD_READ OPEN_PAREN error CLS_PAREN SEMICOLON {
                 $$ = buildNode("SINTATIC ERR!", 10);
+                globalError= globalError+1;
         }
 ;
 
@@ -356,6 +457,7 @@ condition_expr:
         }
         | CMD_IF OPEN_PAREN error CLS_PAREN error {
                 $$ = buildNode("SINTATIC ERR!", 10);
+                globalError= globalError+1;
         }
 ;
 
@@ -392,23 +494,54 @@ return_stmt:
               $$ = buildNode("return", 99);  
         }
         | CMD_RETURN expr SEMICOLON  {
+                int tipo;
+                tipo = findTypeOfReturnFunc(activeScope);
+                $$ = buildNode("return", tipo);  
+                
+                if(tipo != $2->type) {
+                   char* cast;
+                   cast = castToSpecificType(tipo, $2->type);
+                   if(strcmp(cast,"Cast Error!") == 0){
+                        printf("1 ERRRRROOOOOOOOOO NO castToSpecificType \n");   
+                        globalError = globalError + 1;    
+                   }     
+                   $$->childNode = buildNode(cast, tipo);
+                   $$->childNode->childNode = $2;
+                }else{
+                   $$->childNode = $2;
+                }
 
-                $$ = buildNode("return", $2->type);  
-                findTypeOfReturnFunc(activeScope);
-                // if( findTypeOfReturnFunc(activeScope) != $2->type) ;
-                $$->childNode = $2;
+                threeAddress = alocar_memoria(threeAddress);
+                if($expr->registrador == -1){
+                      Symbol *auxVar = findItem(activeScope, $expr->value);
+                      if(auxVar != NULL ){ 
+                        sprintf(threeAddress + strlen(threeAddress), "return $%d // return \n", auxVar->registrador);
+                      } 
+                }else{
+                      sprintf(threeAddress + strlen(threeAddress), "return $%d // return %s \n", $expr->registrador, $expr->value);
+                }
+                
+	       
+                
         }
         | CMD_RETURN error SEMICOLON {
                 $$ = buildNode("SINTATIC ERR!", 10);
+                globalError= globalError+1;
         }
         | CMD_RETURN expr error {
                 $$ = buildNode("SINTATIC ERR!", 10);
+                globalError= globalError+1;
         }
 ;
 
 set_stmt: 
         CMD_FORALL OPEN_PAREN var IN_OP func_expr CLS_PAREN {
-                verifyUnDeclaration(activeScope, $var->value, line, column);
+                int undeclr;
+                undeclr = verifyUnDeclaration(activeScope, $var->value, line, column);
+                if(undeclr == 0){
+                    globalError = globalError + 1; 
+                }
+
                 Scope *newScope = buildScope("Block FORALL ");
                 newScope->parentScope = activeScope;
                 activeScope = newScope; 
@@ -425,8 +558,16 @@ set_stmt:
                 activeScope = auxScope;
         }
         | CMD_FORALL OPEN_PAREN var IN_OP var CLS_PAREN {
-                verifyUnDeclaration(activeScope, $3->value, line, column);
-                verifyUnDeclaration(activeScope, $5->value, line, column);
+                int undeclr;
+                undeclr = verifyUnDeclaration(activeScope, $3->value, line, column);
+                if(undeclr == 0){
+                    globalError = globalError + 1; 
+                }
+                undeclr = verifyUnDeclaration(activeScope, $5->value, line, column);
+                if(undeclr == 0){
+                    globalError = globalError + 1; 
+                }
+                
                 Scope *newScope = buildScope("Block FORALL ");
                 newScope->parentScope = activeScope;
                 activeScope = newScope; 
@@ -445,20 +586,23 @@ set_stmt:
         | is_set_expr SEMICOLON 
         | CMD_FORALL OPEN_PAREN error IN_OP error CLS_PAREN simple_complex_block_stmt {
                 $$ = buildNode("SINTATIC ERR!", 10);
+                globalError= globalError+1;
         }
         | CMD_FORALL OPEN_PAREN error IN_OP func_expr CLS_PAREN error {
                 $$ = buildNode("SINTATIC ERR!", 10);
+                globalError= globalError+1;
         }
         | CMD_FORALL OPEN_PAREN var IN_OP error CLS_PAREN simple_complex_block_stmt {
                 $$ = buildNode("SINTATIC ERR!", 10);
+                globalError= globalError+1;
         }
 ;
 expr_stmt:
         expr SEMICOLON 
         | expr error {
                 $$ = buildNode("SINTATIC ERR!", 10);
+                globalError= globalError+1;
         }
-
 ;
 
 expr:
@@ -468,14 +612,37 @@ expr:
 
 assign:
         var ATRIBUTION expr {
-              verifyUnDeclaration(activeScope, $var->value, line, column);
+
+              if(strcmp($3->value,"EMPTY") == 0){
+                printf("EMPTYYYYY %d %d \n",$1->type, $3->type);
+              }  
+              int undeclr;
+              undeclr = verifyUnDeclaration(activeScope, $var->value, line, column);
+              if(undeclr == 0){
+                globalError = globalError + 1; 
+              }
               $$ = buildNode(" = ", $1->type);
               $$->childNode = $1; 
               if($1->type != $3->type) {
-                $1->brotherNode = buildNode(castToSpecificType($1->type, $3->type),$1->type);
+
+                char* cast;
+                cast = castToSpecificType($1->type, $3->type);
+                if(strcmp(cast,"Cast Error!") == 0){
+                     printf(" 2 ERRRRROOOOOOOOOO NO castToSpecificType! \n");   
+                     globalError = globalError + 1;    
+                }  
+                $1->brotherNode = buildNode(cast, $1->type);
                 $1->brotherNode->childNode = $3;  
               }else{
                 $1->brotherNode = $3;
+              }
+              
+              Symbol *auxVar = findItem(activeScope, $var->value);
+              if(auxVar != NULL){
+                threeAddress = alocar_memoria(threeAddress);
+	        sprintf(threeAddress + strlen(threeAddress), "mov $%d, $%d // var %s = %s \n", auxVar->registrador, $expr->registrador, $var->value, $expr->value);
+                $var->registrador = auxVar->registrador;
+                $var->regis_tipo = "$";
               }
         }
 ;
@@ -506,7 +673,11 @@ func_expr:
 
 is_set_expr :
         IS_SET_FUNC OPEN_PAREN var CLS_PAREN {
-              verifyUnDeclaration(activeScope, $var->value, line, column);
+              int undeclr;
+              undeclr = verifyUnDeclaration(activeScope, $var->value, line, column);
+              if(undeclr == 0){
+                globalError = globalError + 1; 
+              }
               $$ = buildNode(" is_set ", 99);
               $$->childNode = $3;
         }
@@ -515,12 +686,18 @@ is_set_expr :
                 $$->childNode = $3;
         }
         | IS_SET_FUNC OPEN_PAREN error CLS_PAREN {
-             $$ = buildNode("SINTATIC ERR!", 10);    
+             $$ = buildNode("SINTATIC ERR!", 10);   
+             globalError= globalError+1; 
         }
 
 func_in_expr:
         op_or_expr IN_OP var {
-                verifyUnDeclaration(activeScope, $var->value, line, column);
+                int undeclr;
+                undeclr = verifyUnDeclaration(activeScope, $var->value, line, column);
+                if(undeclr == 0){
+                        printf(" op_or_expr IN_OP var ");  
+                        globalError = globalError + 1; 
+                }
                 $$ = buildNode(" IN ", 99);
                 $$->childNode = $1;
                 $1->brotherNode = $3;
@@ -561,6 +738,33 @@ op_or_expr:
                 $1->brotherNode = $3;
               }
               
+              if($1->registrador == -1 && $3->registrador == -1){
+                Symbol *aux1 = findItem(activeScope, $1->value);
+                Symbol *aux3 = findItem(activeScope, $3->value);
+                
+                threeAddress = alocar_memoria(threeAddress);
+                if(aux1 != NULL && aux3 != NULL){
+                  sprintf(threeAddress + strlen(threeAddress), "and $%d, $%d, $%d //  %s &&  %s  \n", registrador, aux1->registrador, aux3->registrador, $1->value, $3->value);
+                }           
+              }else if($1->registrador != -1 && $3->registrador == -1){
+                Symbol *aux1 = findItem(activeScope, $1->value);
+                threeAddress = alocar_memoria(threeAddress);
+
+                if(aux1 != NULL){
+                  sprintf(threeAddress + strlen(threeAddress), "and $%d, $%d, $%d //  %s &&  %s  \n", registrador,  aux1->registrador ,$3->registrador, $1->value, $3->value);
+                }
+              }else if($1->registrador != -1 && $3->registrador == -1){   
+                Symbol *aux3 = findItem(activeScope, $1->value);
+                threeAddress = alocar_memoria(threeAddress);
+                if(aux3 != NULL){
+                   sprintf(threeAddress + strlen(threeAddress), "and $%d, $%d, $%d //  %s &&  %s  \n", registrador, $1->registrador, aux3->registrador, $1->value, $3->value);
+                }        
+              }else{
+                threeAddress = alocar_memoria(threeAddress);        
+                sprintf(threeAddress + strlen(threeAddress), "and $%d, $%d, $%d //  %s &&  %s  \n", registrador, $1->registrador, $3->registrador, $1->value, $3->value);
+              }   
+
+
         }
         | op_and_expr 
         | func_in_expr
@@ -568,37 +772,98 @@ op_or_expr:
 
 op_and_expr:
         op_and_expr OP_AND logical_expr {
-              $$ = buildNode("and", 0);
-              if($1->type != 0 && $3->type != 0){
-                $$->childNode = buildNode(castToInt(0, $1->type), 0);
-                $$->childNode->childNode = $1;
-                TreeNodes *aux = buildNode(castToInt(0, $3->type), 0);
-                $$->childNode->brotherNode = aux;
-                aux->childNode = $3;    
+                $$ = buildNode("and", 0);
 
-              }else if($1->type != 0){
-                $$->childNode = buildNode(castToInt(0, $1->type), 0);
-                $$->childNode->childNode = $1;
-                $$->childNode->brotherNode = $3;        
+                if($1->registrador == -1 && $3->registrador == -1){
+                  Symbol *aux1 = findItem(activeScope, $1->value);
+                  Symbol *aux3 = findItem(activeScope, $3->value);
+                        
+                  threeAddress = alocar_memoria(threeAddress);
+                  if(aux1 != NULL && aux3 != NULL){
+                        sprintf(threeAddress + strlen(threeAddress), "and $%d, $%d, $%d //  %s &&  %s  \n", registrador, aux1->registrador, aux3->registrador, $1->value, $3->value);
+                   }           
+                }else if($1->registrador != -1 && $3->registrador == -1){
+                  Symbol *aux1 = findItem(activeScope, $1->value);
+                  threeAddress = alocar_memoria(threeAddress);
+                  if(aux1 != NULL){
+                        sprintf(threeAddress + strlen(threeAddress), "and $%d, $%d, $%d //  %s &&  %s  \n", registrador,  aux1->registrador ,$3->registrador, $1->value, $3->value);
+                  }
+                }else if($1->registrador != -1 && $3->registrador == -1){   
+                  Symbol *aux3 = findItem(activeScope, $1->value);
+                  threeAddress = alocar_memoria(threeAddress);
+                  if(aux3 != NULL){
+                        sprintf(threeAddress + strlen(threeAddress), "and $%d, $%d, $%d //  %s &&  %s  \n", registrador, $1->registrador, aux3->registrador, $1->value, $3->value);
+                  }        
+                }else{
+                  threeAddress = alocar_memoria(threeAddress);        
+                  sprintf(threeAddress + strlen(threeAddress), "and $%d, $%d, $%d //  %s &&  %s  \n", registrador, $1->registrador, $3->registrador, $1->value, $3->value);
+                }     
+                
+                $$->registrador = registrador;
+                $$->regis_tipo = "$"; 
+                registrador = registrador+1;         
 
-              }else if($3->type != 0){
-                $$->childNode = $1;
-                $1->brotherNode = buildNode(castToInt(0, $3->type), 0);
-                $1->brotherNode->childNode = $3; 
-              }else{
-                $$->childNode = $1;
-                $1->brotherNode = $3;
-              }
+                if($1->type != 0 && $3->type != 0){
+                   $$->childNode = buildNode(castToInt(0, $1->type), 0);
+                   $$->childNode->childNode = $1;
+                   TreeNodes *aux = buildNode(castToInt(0, $3->type), 0);
+                        $$->childNode->brotherNode = aux;
+                        aux->childNode = $3;    
+
+                }else if($1->type != 0){
+                        $$->childNode = buildNode(castToInt(0, $1->type), 0);
+                        $$->childNode->childNode = $1;
+                        $$->childNode->brotherNode = $3;        
+
+                }else if($3->type != 0){
+                        $$->childNode = $1;
+                        $1->brotherNode = buildNode(castToInt(0, $3->type), 0);
+                        $1->brotherNode->childNode = $3; 
+                }else{
+                        $$->childNode = $1;
+                        $1->brotherNode = $3;
+                }
         }
         | logical_expr 
 ;
 
 logical_expr:
        logical_expr logical_ops arithmetic_expr {
-              // or and e logico sempre int 
               $$ = $2;
               //      $2->childNode = $1; 
               //      $1->brotherNode = $3;
+
+              if($1->registrador == -1 && $3->registrador == -1){
+                Symbol *aux1 = findItem(activeScope, $1->value);
+                Symbol *aux3 = findItem(activeScope, $3->value);
+                        
+                threeAddress = alocar_memoria(threeAddress);
+                if(aux1 != NULL && aux3 != NULL){
+                        sprintf(threeAddress + strlen(threeAddress), logical_ops_tac($2->value), registrador, aux1->registrador, aux3->registrador, $1->value, $3->value);
+                } 
+
+              }else if($1->registrador == -1 && $3->registrador != -1){  
+                Symbol *aux1 = findItem(activeScope, $1->value); 
+                threeAddress = alocar_memoria(threeAddress);  
+                if(aux1 != NULL){
+                        sprintf(threeAddress + strlen(threeAddress), logical_ops_tac($2->value), registrador, aux1->registrador, $3->registrador, $1->value, $3->value);
+                }
+
+              }else if($1->registrador != -1 && $3->registrador == -1){
+                Symbol *aux3 = findItem(activeScope, $1->value); 
+                threeAddress = alocar_memoria(threeAddress);  
+                if(aux3 != NULL){
+                        sprintf(threeAddress + strlen(threeAddress), logical_ops_tac($2->value), registrador, $1->registrador, aux3->registrador, $1->value, $3->value);
+                }     
+              }else {
+                threeAddress = alocar_memoria(threeAddress);      
+                sprintf(threeAddress + strlen(threeAddress), logical_ops_tac($2->value), registrador, $1->registrador, $3->registrador, $1->value, $3->value);
+              }
+
+              $2->registrador = registrador;
+              $2->regis_tipo = "$"; 
+              registrador = registrador+1;
+
               if($1->type != 0 && $3->type != 0){
                 $$->childNode = buildNode(castToInt(0, $1->type), 0);
                 $$->childNode->childNode = $1;
@@ -625,18 +890,77 @@ logical_expr:
 
 arithmetic_expr: 
         arithmetic_expr adds_op mult_expr {
+              
+                if($1->registrador == -1 && $3->registrador == -1){
+                        Symbol *aux1 = findItem(activeScope, $1->value);
+                        Symbol *aux3 = findItem(activeScope, $3->value);
+                        
+                        threeAddress = alocar_memoria(threeAddress);
+                        if(aux1 != NULL && aux3 != NULL){
+                            if(strcmp($2->value, "+") == 0){
+                                sprintf(threeAddress + strlen(threeAddress), "add $%d, %s%d, %s%d // var %s + var %s  \n", registrador, aux1->regis_tipo, aux1->registrador, aux3->regis_tipo, aux3->registrador, $1->value, $3->value);
+                            }else{
+                                sprintf(threeAddress + strlen(threeAddress), "sub $%d, %s%d, %s%d // var %s + var %s  \n", registrador, aux1->regis_tipo, aux1->registrador, aux3->regis_tipo, aux3->registrador, $1->value, $3->value);
+                            }
+                       }
+                }else if($1->registrador == -1 && $3->registrador != -1){
+                        Symbol *aux1 = findItem(activeScope, $1->value);
+                        threeAddress = alocar_memoria(threeAddress);
+                        if(aux1 != NULL){
+                            if(strcmp($2->value, "+") == 0){
+                                sprintf(threeAddress + strlen(threeAddress), "add $%d, $%d, $%d // var %s + var %s  \n", registrador,  aux1->registrador ,$3->registrador, $1->value, $3->value);
+                            }else{
+                                sprintf(threeAddress + strlen(threeAddress), "sub $%d, $%d, $%d // var %s + var %s  \n", registrador,  aux1->registrador, $3->registrador, $1->value, $3->value);
+                            }
+                       }
+                }else if($1->registrador != -1 && $3->registrador == -1){
+                        Symbol *aux3 = findItem(activeScope, $3->value);
+                        threeAddress = alocar_memoria(threeAddress);
+                        if(aux3 != NULL){
+                            if(strcmp($2->value, "+") == 0){
+                                sprintf(threeAddress + strlen(threeAddress), "add $%d, $%d, $%d // var %s + var %s  \n", registrador,  $1->registrador ,aux3->registrador, $1->value, $3->value);
+                            }else{
+                                sprintf(threeAddress + strlen(threeAddress), "sub $%d, $%d, $%d // var %s + var %s  \n", registrador,  $1->registrador, aux3->registrador, $1->value, $3->value);
+                            }
+                       }
+                }else{
+                        threeAddress = alocar_memoria(threeAddress);   
+                        if(strcmp($2->value, "+") == 0){
+                                sprintf(threeAddress + strlen(threeAddress), "add $%d, $%d, $%d // var %s + var %s  \n", registrador,  $1->registrador ,$3->registrador, $1->value, $3->value);
+                        }else{
+                                sprintf(threeAddress + strlen(threeAddress), "sub $%d, $%d, $%d // var %s + var %s  \n", registrador,  $1->registrador, $3->registrador, $1->value, $3->value);
+                        }
+                }
+              
+
+              $2->registrador = registrador;
+              $2->regis_tipo = "$"; 
+              registrador = registrador+1;
+
               if($1->type != $3->type) {
                 $$ = $2;
                 $2->type = typeNodo($1->type, $3->type);
 
                 // faz o cast a esquerda ou a direita
                 if( ($1->type == 0 && ($3->type == 1 || $3->type == 3)) || ($1->type == 1 && $3->type == 3) ){
-                    $2->childNode = buildNode(castType($1->type, $3->type), typeNodo($1->type, $3->type));
+                    char* cast;
+                    cast = castType($1->type, $3->type);
+                    if(strcmp(cast,"Cast Error!") == 0){
+                        printf("3 ERRRRROOOOOOOOOO NO castType ");   
+                        globalError = globalError + 1;    
+                    }    
+                    $2->childNode = buildNode(cast, typeNodo($1->type, $3->type));
                     $2->childNode->childNode = $1;
                     $2->brotherNode = $3;
                 }else{
                     $2->childNode = $1;
-                    $1->brotherNode = buildNode(castType($1->type, $3->type), typeNodo($1->type, $3->type));
+                    char* cast;
+                    cast = castType($1->type, $3->type);
+                    if(strcmp(cast,"Cast Error!") == 0){
+                        printf("4 ERRRRROOOOOOOOOO NO castType ");   
+                        globalError = globalError + 1;    
+                    }
+                    $1->brotherNode = buildNode(cast, typeNodo($1->type, $3->type));
                     $1->brotherNode->childNode = $3;
                 }
                 
@@ -653,18 +977,76 @@ arithmetic_expr:
 
 mult_expr:
         mult_expr mult_ops first_term {
+
+              if($1->registrador == -1 && $3->registrador == -1){
+                Symbol *aux1 = findItem(activeScope, $1->value);
+                Symbol *aux3 = findItem(activeScope, $3->value);
+                printf(" %s mul \n",$2->value);
+                if(aux1 != NULL && aux3 != NULL){
+                        threeAddress = alocar_memoria(threeAddress);
+                        if(strcmp($2->value, "*") == 0){
+                                sprintf(threeAddress + strlen(threeAddress), "mul $%d, $%d, $%d // var %s */ var %s  \n", registrador, aux1->registrador, aux3->registrador, $1->value, $3->value);   
+                        }else{
+                                sprintf(threeAddress + strlen(threeAddress), "div $%d, $%d, $%d // var %s */ var %s  \n", registrador, aux1->registrador, aux3->registrador, $1->value, $3->value);
+                        } 
+                }
+              }else if($1->registrador == -1 && $3->registrador != -1){
+                        Symbol *aux1 = findItem(activeScope, $1->value);
+                        threeAddress = alocar_memoria(threeAddress);
+                        if(aux1 != NULL){
+                            if(strcmp($2->value, "*") == 0){
+                                sprintf(threeAddress + strlen(threeAddress), "mul $%d, $%d, $%d // var %s + var %s  \n", registrador,  aux1->registrador ,$3->registrador, $1->value, $3->value);
+                            }else{
+                                sprintf(threeAddress + strlen(threeAddress), "div $%d, $%d, $%d // var %s + var %s  \n", registrador,  aux1->registrador, $3->registrador, $1->value, $3->value);
+                            }
+                       }
+                }else if($1->registrador != -1 && $3->registrador == -1){
+                        Symbol *aux3 = findItem(activeScope, $3->value);
+                        threeAddress = alocar_memoria(threeAddress);
+                        if(aux3 != NULL){
+                            if(strcmp($2->value, "*") == 0){
+                                sprintf(threeAddress + strlen(threeAddress), "mul $%d, $%d, $%d // var %s + var %s  \n", registrador,  $1->registrador ,aux3->registrador, $1->value, $3->value);
+                            }else{
+                                sprintf(threeAddress + strlen(threeAddress), "div $%d, $%d, $%d // var %s + var %s  \n", registrador,  $1->registrador, aux3->registrador, $1->value, $3->value);
+                            }
+                       }
+                }else{
+                        threeAddress = alocar_memoria(threeAddress);   
+                        if(strcmp($2->value, "*") == 0){
+                                sprintf(threeAddress + strlen(threeAddress), "mul $%d, $%d, $%d // var %s + var %s  \n", registrador,  $1->registrador ,$3->registrador, $1->value, $3->value);
+                        }else{
+                                sprintf(threeAddress + strlen(threeAddress), "div $%d, $%d, $%d // var %s + var %s  \n", registrador,  $1->registrador, $3->registrador, $1->value, $3->value);
+                        }
+                }
+
+              $2->registrador = registrador;
+              $2->regis_tipo = "$"; 
+              registrador = registrador+1;
+              
               if($1->type != $3->type) {
                 $$ = $2;
                 $2->type = typeNodo($1->type, $3->type);
 
                 // faz o cast a esquerda ou a direita
                 if(($1->type == 0 && ($3->type == 1 || $3->type == 3)) || ($1->type == 1 && $3->type == 3)){
-                    $2->childNode = buildNode(castType($1->type, $3->type), typeNodo($1->type, $3->type));
+                    char* cast;
+                    cast = castType($1->type, $3->type);
+                    if(strcmp(cast, "Cast Error!") == 0){
+                        printf("5 ERRRRROOOOOOOOOO NO castType");   
+                        globalError = globalError + 1;    
+                    }    
+                    $2->childNode = buildNode(cast, typeNodo($1->type, $3->type));
                     $2->childNode->childNode = $1;
                     $2->brotherNode = $3;
                 }else {
                     $2->childNode = $1;
-                    $1->brotherNode = buildNode(castType($1->type, $3->type), typeNodo($1->type, $3->type));
+                    char* cast;
+                    cast = castType($1->type, $3->type);
+                    if(strcmp(cast,"Cast Error!") == 0){
+                        printf("6 ERRRRROOOOOOOOOO NO castType");   
+                        globalError = globalError + 1;    
+                    }  
+                    $1->brotherNode = buildNode(cast, typeNodo($1->type, $3->type));
                     $1->brotherNode->childNode = $3;
                 }
               }else{
@@ -681,22 +1063,47 @@ mult_expr:
 first_term: 
         term
         | OP_NEG term {
-              $$ = buildNode(" ! ", 99);
+              $$ = buildNode(" ! ", $term->type);
               $$->childNode = $2;
         } 
         | adds_op term {
               $$ = $1;
+              $1->type = $term->type;
               $1->childNode = $2;
         }
         | var OPEN_PAREN list_expr CLS_PAREN {
-                verifyFuncDeclaration(activeScope, $var->value, line, column, numListArgs);
+                int funcDeclr;
+                funcDeclr = verifyFuncDeclaration(activeScope, $var->value, line, column, numListArgs);
+                if(funcDeclr == 0){
+                   globalError = globalError + 1; 
+                }
+
+                threeAddress = alocar_memoria(threeAddress);
+	        sprintf(threeAddress + strlen(threeAddress), "call %s, %d // call \n", $var->value, numListArgs);
+                
+                threeAddress = alocar_memoria(threeAddress);
+                sprintf(threeAddress + strlen(threeAddress), "pop $%d // pop \n", registrador);
+
+                registrador = registrador + 1;
                 numListArgs = 0;
                 $$ = $1;
                 $1->type = $3->type;
                 $1->brotherNode = $3;
         }
         | var OPEN_PAREN CLS_PAREN {
-                verifyFuncDeclaration(activeScope, $var->value, line, column, 0);
+                int funcDeclr;
+                funcDeclr = verifyFuncDeclaration(activeScope, $var->value, line, column, 0);
+                if(funcDeclr == 0){
+                   globalError = globalError + 1; 
+                }
+
+                threeAddress = alocar_memoria(threeAddress);
+	        sprintf(threeAddress + strlen(threeAddress), "call %s, %d // call \n", $var->value, numListArgs);
+                
+                threeAddress = alocar_memoria(threeAddress);
+                sprintf(threeAddress + strlen(threeAddress), "pop $%d // pop \n", registrador);
+
+                registrador = registrador + 1;
         }
         | var OPEN_PAREN error CLS_PAREN {
                 $$ = buildNode("SINTATIC ERR!", 10);
@@ -708,11 +1115,18 @@ first_term:
 
 term: 
         var {
-                verifyUnDeclaration(activeScope, $var->value, line, column);
+                int undeclr;
+                undeclr = verifyUnDeclaration(activeScope, $var->value, line, column);
+                if(undeclr == 0){
+                   globalError = globalError + 1; 
+                }
         }
-        | num_tipos 
+        | num_tipos  
         | OPEN_PAREN expr CLS_PAREN {
                 $$ = $2;
+        }
+        | EMPTY {
+              $$ = buildNode("EMPTY 2", 2);
         }
         | OPEN_PAREN error  CLS_PAREN {
                 $$ = buildNode("SINTATIC ERR!", 10);
@@ -721,28 +1135,31 @@ term:
 
 logical_ops: 
         LT_OP {
-                $$ = buildNode("LT_OP", 99);
+                $$ = buildNode("LT_OP", 0);
         }
         |  LTE_OP {
-                $$ = buildNode("LTE_OP", 99);
+                $$ = buildNode("LTE_OP", 0);
         }  
         |  GT_OP {
-                $$ = buildNode("GT_OP", 99);
+                $$ = buildNode("GT_OP", 0);
         } 
         |  GTE_OP {
-                $$ = buildNode("GTE_OP", 99);
+                $$ = buildNode("GTE_OP", 0);
         }
         |  NEQ_OP {
-                $$ = buildNode("NEQ_OP", 99);
+                $$ = buildNode("NEQ_OP", 0);
         }
         |  EQUAL_OP {
-                $$ = buildNode("EQUAL_OP", 99);
+                $$ = buildNode("EQUAL_OP", 0);
         }
 ;
 
 str_expr:
         STRING {
             $$ = buildNode($1, 99);
+            table = alocar_memoria(table);
+            sprintf(table + strlen(table), " char str_char%d[]=%s \n", registrador, $1);
+            $$->registrador = registrador;
             free($1);
         }
 ;
@@ -757,9 +1174,27 @@ char_expr:
 list_expr:
         expr COMMA list_expr {
                 numListArgs = numListArgs + 1;
+                if($expr->registrador == -1){
+                     Symbol *aux1 = findItem(activeScope, $1->value);
+                     threeAddress = alocar_memoria(threeAddress);
+                     if(aux1 != NULL){
+                        sprintf(threeAddress + strlen(threeAddress), "param $%d // var %s \n", aux1->registrador, $expr->value);
+                     }
+                }else{
+                        sprintf(threeAddress + strlen(threeAddress), "param $%d // var %s \n", $expr->registrador, $expr->value);
+                }
         }
         | expr {
                 numListArgs = numListArgs + 1;
+                if($expr->registrador == -1){
+                     Symbol *aux1 = findItem(activeScope, $1->value);
+                     threeAddress = alocar_memoria(threeAddress);
+                     if(aux1 != NULL){
+                        sprintf(threeAddress + strlen(threeAddress), "param $%d // var %s \n", aux1->registrador, $expr->value);
+                     }
+                }else{
+                        sprintf(threeAddress + strlen(threeAddress), "param $%d // var %s \n", $expr->registrador, $expr->value);
+                }
         }
         | error COMMA error {
              $$ = buildNode("SINTATIC ERR!", 10);   
@@ -783,21 +1218,29 @@ adds_op:
 mult_ops:
       MULT_OP {
               $$ = buildNode($1, 99); 
-              free($1);  
+              free($1);
       }
 ;
 
 num_tipos: 
         FLOAT {
               $$ = buildNode($1, 1);
+              $$->registrador = registrador;
+              $$->regis_tipo = "$";
+              threeAddress = alocar_memoria(threeAddress);
+	      sprintf(threeAddress + strlen(threeAddress), "mov $%d, %s  // num %s\n", registrador, $$->value, $$->value);
+              registrador = registrador + 1;
               free($1);
+        
         }
         | INT {
               $$ = buildNode($1, 0);
+              $$->registrador = registrador;
+              $$->regis_tipo = "$";
+              threeAddress = alocar_memoria(threeAddress);
+	      sprintf(threeAddress + strlen(threeAddress), "mov $%d, %s  // num %s\n", registrador, $$->value, $$->value);
+              registrador = registrador + 1;
               free($1);
-        }
-        | EMPTY {
-              $$ = buildNode("EMPTY", 99);
         }
 ;
 
@@ -819,10 +1262,11 @@ tipos:
 
 
 int yyerror(const char* errormsg) {
-  printf(" ----------------------------- ERROR ---------------------------------------------- \n");
-  fprintf(stderr, "%s at line:%d, column:%d,\n", errormsg, line, column);
+  printf(" ----------------------------- SYNTACTIC ERROR ---------------------------------------------- \n");
+  fprintf(stderr, " %s at line:%d, column:%d,\n", errormsg, line, column);
   printf(" ------------------------------------------------------------------------------------ \n");
   printf("\n");
+  globalError = globalError+1;
   return 0;
 }
 
@@ -830,15 +1274,33 @@ int main(int argc, char *argv[]) {
    
      yyin = fopen(argv[1], "r");
      activeScope = buildScope("GLOBAL SCOPE");  
+     // insere as funcoes
+     threeAddress = alocar_memoria(threeAddress);
+     threeAddress = func_write(threeAddress);
+     threeAddress = func_writeln(threeAddress);
+
      yyparse();
      
      showScope(activeScope);
      freeScope(activeScope);
-     showTree(origin, 0); 
+     
+     if(globalError == 0 && isMain == 1 ){
+        FILE *tac;
+        tac = fopen("three_address.tac", "w+");
+        fprintf(tac, ".table\n"); // constante de string 
+        if (table){
+          fprintf(tac, "%s", table);
+        } 
+        fprintf(tac, ".code\n\n");
+        fprintf(tac, "%s", threeAddress);
+        fclose(tac);
+     }
+      free(threeAddress);
      
      // erros
      errorMain(isMain);
 
+     showTree(origin, 0); 
      clearTree(origin);
     
      fclose(yyin);

@@ -1,14 +1,20 @@
 int sub( int a, float b){  
     int c;
     c = a - b;
-    
-    for (i = 3; !(remove(1  i)) && 3 < 4; i = i + 1) {
-        b = i;
+    float b;
+    elem vs;
+
+    if(a > b){
+        vs = a * 3.4;
     }
 
-    if(!a > b){
-        x = a * 3.4;
-    }
+    return a ** $b;
+}
 
-    return a ** b;
+float soma(int x, float a){
+
+    float res;
+
+    res = sub(x, a, sub);
+
 }

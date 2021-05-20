@@ -21,7 +21,7 @@
 INT [0-9]+ 
 FLOAT [0-9]+|[0-9]+\.[0-9]+
 MAIN main
-EMPTY empty
+EMPTY EMPTY
 ADD_OP "+"|"-" 
 MULT_OP "*"|"/"
 OP_OR  "||" 
@@ -129,7 +129,12 @@ CLS_CUR_BRACKET "}"
 {CLS_CUR_BRACKET}   {column += yyleng; fill(line, column); return (CLS_CUR_BRACKET) ;}
 
 [ \t\r]+            {column += yyleng;}
-.	                {printf("l:%d col:%d INVALID TOKEN: %s\n", line, column, yytext); column += yyleng;}
+.	                {
+  printf(" ----------------------------- LEXICAL ERROR ---------------------------------------------- \n");
+  printf(" INVALID LEXEMA: %s at line:%d column:%d \n", yytext, line, column); column += yyleng;
+  printf(" ------------------------------------------------------------------------------------------ \n");
+  printf("\n");
+  }
 
 %%
 /* int main()

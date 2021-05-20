@@ -1,33 +1,23 @@
-int acna(int a, int b){  
+int soma( int a, int b){  
     int c;
     d = a + b;
+    set ac;
 
     if(a > b) {
         float v;
         v = b + 2.1;
-
-        if(a == b){
-            write("teste");
-        }
-
     }else {
-        a = -b + 3;
+        a = b + 3;
     }
-
-    if(c == d){
-        write("teste2");
-    }
-    
-    exist(a in b);
-
+    return ac;
 }
 
-int main() {
-    int a;
-    int b;
-    int c;
+int main () {
 
-    c = b + c;
-
-    return c;
+    int res;
+    res = soma(1);
+    funcB(2,4);
+    int x&;
+    
+    return "asd";
 }

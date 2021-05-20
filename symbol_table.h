@@ -13,6 +13,8 @@ struct Symbol{
     int numArgs;
     Symbol *next;
     Scope *scope;
+    char* regis_tipo;
+    int registrador;
 };
 
 struct Scope {
@@ -24,14 +26,14 @@ struct Scope {
 void showTable(Symbol *table);
 void freeTable(Symbol *table);
 void insertItem(Scope *scope, Symbol* item);
-Symbol *createItem(char *type, char *id, int line);
+Symbol *createItem(char *type, char *id, int line, int isFunction);
 Scope  *buildScope(char *scopeName);
 void showScope(Scope *scope);
 void freeScope(Scope *scope);
 void errorMain(int);
-void verifyReDeclaration(Scope *scope, char* var, int line, int column);
-void verifyUnDeclaration(Scope *scope, char* var, int line, int column);
-void verifyFuncDeclaration(Scope *scope, char* var, int line, int column, int numArgsFunc);
+int verifyReDeclaration(Scope *scope, char* var, int line, int column);
+int verifyUnDeclaration(Scope *scope, char* var, int line, int column);
+int verifyFuncDeclaration(Scope *scope, char* var, int line, int column, int numArgsFunc);
 int isDeclared(Scope *scope, char* var, int declared);
 int isDeclaredInScope(Scope *scope, char* var, int declared);
 int isDeclaredFunc(Scope *scope, char* var, int declared);

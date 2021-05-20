@@ -37,7 +37,7 @@ void freeTable(Symbol *table){
 }
 
 
-Symbol *createItem(char *type, char *id, int line) {
+Symbol *createItem(char *type, char *id, int line, int isFunction) {
 
     Symbol *item = (Symbol *)malloc(sizeof(Symbol));
     item->next = NULL;
@@ -45,11 +45,7 @@ Symbol *createItem(char *type, char *id, int line) {
     item->id = strdup(id);
     item->type = strdup(type);
     item->line = line;
-    if(!strcmp(type, "FUNCTION")){
-        item->isFunction = 1;
-    }else{
-        item->isFunction = 0;
-    }
+    item->isFunction = isFunction;
     item->numArgs = 0;
     return item;
 }
@@ -120,7 +116,7 @@ void errorMain(int isMain){
      }
 }
 
-void verifyReDeclaration(Scope *scope, char* var, int line, int column) {
+int verifyReDeclaration(Scope *scope, char* var, int line, int column) {
     int aux;
     aux = isDeclaredInScope(scope, var, 0);
 
@@ -129,23 +125,33 @@ void verifyReDeclaration(Scope *scope, char* var, int line, int column) {
         printf(" Error: Redeclaration Variable: %s - at line: %d column: %d                                                         \n", var ,line ,column);
         printf(" ------------------------------------------------------------------------------------------- \n");
         printf("\n");
+
+        return aux;
     }
+
+    return aux;
 
 }
 
-void verifyUnDeclaration(Scope *scope, char* var, int line, int column) {
+int verifyUnDeclaration(Scope *scope, char* var, int line, int column) {
     int aux;
+    if(strcmp(var,"EMPTY") == 0){
+        return 1;
+    }
+
     aux = isDeclared(scope, var, 0);
-    // printf("verifyUnDeclaration: %s \n", var);
+   
     if(aux == 0){
         printf(" ----------------------------- SEMANTIC ERROR ---------------------------------------------- \n");
         printf(" Error: Undeclared Variable: %s - at line: %d column: %d                                                         \n", var ,line ,column);
         printf(" ------------------------------------------------------------------------------------------- \n");
         printf("\n");
+        return aux;
     }
+    return aux;
 }
 
-void verifyFuncDeclaration(Scope *scope, char* var, int line, int column, int numArgsFunc) {
+int verifyFuncDeclaration(Scope *scope, char* var, int line, int column, int numArgsFunc) {
     int aux;
     aux = isDeclaredFunc(scope, var, 0);
 
@@ -154,6 +160,7 @@ void verifyFuncDeclaration(Scope *scope, char* var, int line, int column, int nu
         printf(" Error: Undeclared Function: %s - at line: %d column: %d                                                         \n", var ,line ,column);
         printf(" ------------------------------------------------------------------------------------------- \n");
         printf("\n");
+        return 0;
     }else{
         if(itemFuncAux->numArgs != numArgsFunc){
             printf(" ----------------------------- SEMANTIC ERROR ---------------------------------------------- \n");
@@ -166,6 +173,8 @@ void verifyFuncDeclaration(Scope *scope, char* var, int line, int column, int nu
             printf("\n");
         }
     }
+
+    return aux;
 
 }
 
@@ -264,9 +273,7 @@ int findTypeOfReturnFunc(Scope *scope){
     int tipo = 99;
     aux = findReturnFunc(scope->parentScope, scope->scopeName);
     if(aux != NULL){
-        printf("retorno %s \n", aux->id);
         tipo = findTypeItem(scope->parentScope, aux->id);
-        printf("Achou o tipo %d \n", tipo);
     }else{
         return 10;
     }
