@@ -18,9 +18,9 @@ int main() {
 
     read(i);
 
-    if (i >0) write(fib(i));
+    if (i >0) writeln(fib(i));
 
-    // return 0;
+    return 0;
 
 }
 

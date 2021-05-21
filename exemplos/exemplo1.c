@@ -1,33 +1,24 @@
-int func(int f, int g) {
-    int u;
-    u = f + g;
-    writeln(u);
-    return u;
+int func(int f) {
+    
+    int i;
+    for (i = 1; i < f; i = i+1) {
+        writeln(i);
+    }
+    return f;
 }
 
 int main () {
-    int a, c;
-    int b;
-    float x;
-    a = -10;
-    b = 2;
-    // if(a && b){
-    //     writeln(a);
-    // }else if( a || b) {
-    //     writeln(a);
-    // }
-    // if(a != b){
-    //     writeln(a);
-    // }
-    // }else if( a < b) {
-    //     writeln(b);
-    // }else if( a <= b) {
-    //     writeln(b);
-    // }else if( a >= b) {
-    //     writeln(a);
-    // }
-    // c = func(a, b);
-    // (a / b) * a;
-    // writeln(func(a, b));
-    read("c");
+    int c;
+    
+    writeln("Digite um número:");
+    read(c);
+    if(c > 10){
+        writeln("Número maior que 10");
+    }else{
+        writeln("Número menor que 10");
+    }
+
+    writeln("Contando.. ");
+    
+    func(c);
 }

@@ -15,6 +15,6 @@ float soma(int x, float a){
 
     float res;
 
-    res = sub(x, a, sub);
+    res = sub(x, a, df);
 
 }
