@@ -24,18 +24,18 @@ char* logical_ops_tac(char* var){
 	// LTE_OP "<=" 
 	// NEQ_OP "!=" 
 	// EQUAL_OP "=="
-
+	// a < b equivale a  b >= a
+	// a > b equivale b <= a
 	if(strcmp(var, "GT_OP") == 0){
-	return " $%d, $%d, $%d // var %s > var %s \n";
-	// slt <destino>, <operando1>, <operando2>	
+	  return "slt $%d, $%d, $%d // var %s > var %s \n";
 	}else if(strcmp(var, "LT_OP") == 0){
 		return "slt $%d, $%d, $%d // var %s < var %s \n";
 	}else if(strcmp(var, "GTE_OP") == 0){
-		return " $%d, $%d, $%d // var %s >= var %s \n";
+		return "sleq $%d, $%d, $%d // var %s >= var %s \n";
 	}else if(strcmp(var, "LTE_OP") == 0){
 		return "sleq $%d, $%d, $%d // var %s <= var %s \n";
 	}else if(strcmp(var, "NEQ_OP") == 0){
-		return " $%d, $%d, $%d // var %s != var %s \n";	
+		return "seq $%d, $%d, $%d // var %s != var %s \n";	
 	}else if(strcmp(var, "EQUAL_OP") == 0){
 		return "seq $%d, $%d, $%d // var %s == var %s \n";
 	}

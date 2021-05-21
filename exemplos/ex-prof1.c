@@ -20,7 +20,7 @@ int main() {
 
     if (i >0) write(fib(i));
 
-    return 0;
+    // return 0;
 
 }
 

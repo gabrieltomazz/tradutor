@@ -6,17 +6,19 @@ int func(int f, int g) {
 }
 
 int main () {
-    float a, c;
-    float b;
-    a = 10;
+    int a, c;
+    int b;
+    float x;
+    a = -10;
     b = 2;
     // if(a && b){
     //     writeln(a);
     // }else if( a || b) {
     //     writeln(a);
     // }
-    // if(a > b){
+    // if(a != b){
     //     writeln(a);
+    // }
     // }else if( a < b) {
     //     writeln(b);
     // }else if( a <= b) {
@@ -26,5 +28,6 @@ int main () {
     // }
     // c = func(a, b);
     // (a / b) * a;
-    writeln(c);
+    // writeln(func(a, b));
+    read("c");
 }

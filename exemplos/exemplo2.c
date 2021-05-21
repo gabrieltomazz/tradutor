@@ -1,8 +1,13 @@
 int func(int f, int g) {
-    return f * g;
+    int u;
+    u = f + g; 
+    return u;
 }
 
 int main () {
-    writeln("Olá Mundo");
-    writeln("Olá Mundo 2");
+    int a; 
+    int b; 
+    b = 5;
+    a = func(2,3) + 5;
+    writeln(a);
 }

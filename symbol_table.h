@@ -21,6 +21,7 @@ struct Scope {
     char* scopeName;
     Scope *parentScope;
     Symbol *listSymbol;
+    int jump;
 };
 
 void showTable(Symbol *table);

@@ -10,8 +10,8 @@
   void fillToken(int line, int column) {
         yylval.token.body = strdup(yytext);
 
-        yylval.sval = malloc(strlen(yytext));
-        strncpy(yylval.sval, yytext, strlen(yytext));
+        yylval.sval = malloc(strlen(yytext) + 1);
+        strncpy(yylval.sval, yytext, strlen(yytext) + 1);
   }
   void fill(int line, int column) {
         yylval.token.body = strdup(yytext);
@@ -28,7 +28,7 @@ OP_OR  "||"
 OP_AND &&
 OP_NEG !
 STRING \"[^\"]*\"
-CHARACTER ['][^'][']|[']\\r[']|[']\\n[']|[']\\t[']
+CHARACTER ['][^'][']|[']\\r[']|[']\\n[']|[']\\t[']|[']\\a[']|[']\\b[']|[']\\f[']|[']\\v[']|[']\\r[']|[']\\\\[']|[']\\0[']
 ADD_FUNC add
 IS_SET_FUNC is_set
 REMOVE_FUNC remove

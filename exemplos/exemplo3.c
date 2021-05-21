@@ -9,7 +9,7 @@ int soma( int a, int b){
     }else {
         a = b + 3;
     }
-    return ac;
+    return acds;
 }
 
 int main () {

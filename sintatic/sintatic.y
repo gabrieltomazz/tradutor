@@ -26,9 +26,11 @@
   int numListArgs = 0;   
   int registrador = 0; 
   int globalError = 0;  
+  int jumpReg = 5;
   char* typeManyDeclaration;
   char* threeAddress;
   char* table;
+  int isReturn =0;
   
   TreeNodes* origin;
   Scope* activeScope;
@@ -255,6 +257,9 @@ func_declaration:
             freeScope(activeScope);
             activeScope = auxScope;
             
+            threeAddress = alocar_memoria(threeAddress);
+            sprintf(threeAddress + strlen(threeAddress), "nop \n");
+            
         }
         | tipos var OPEN_PAREN error CLS_PAREN blockStmt {
                 $$ = buildNode("SINTATIC ERR!", 10);
@@ -382,6 +387,23 @@ input_output_expr:
         }
         | write_commands OPEN_PAREN char_expr CLS_PAREN SEMICOLON {
                 $$->childNode = $3;
+
+                $1->childNode = $3;
+                
+                threeAddress = alocar_memoria(threeAddress);
+                sprintf(threeAddress + strlen(threeAddress), "mov $%d, &str_char%d  \n", registrador, $3->registrador);
+                
+                threeAddress = alocar_memoria(threeAddress);
+                sprintf(threeAddress + strlen(threeAddress), "param $%d  \n",registrador);
+                
+                threeAddress = alocar_memoria(threeAddress);
+                if(strcmp($1->value,"CMD_WRITE_STR") == 0) {
+                        sprintf(threeAddress + strlen(threeAddress), "call write_str, 1  \n");
+                }else {
+                        sprintf(threeAddress + strlen(threeAddress), "call writeln_str, 1 \n"); 
+                }
+
+                registrador = registrador+1;
         }
         | CMD_READ OPEN_PAREN var CLS_PAREN SEMICOLON {
                 int undeclr;
@@ -391,6 +413,19 @@ input_output_expr:
                 }
                 $$ = buildNode("CMD_READ_VAR", 99);
                 $$->childNode = $3;
+
+                threeAddress = alocar_memoria(threeAddress);
+                Symbol *aux1 = findItem(activeScope, $var->value);
+                if(aux1 != NULL){
+                  if($var->type == 0){
+                     sprintf(threeAddress + strlen(threeAddress), "scani $%d \n",aux1->registrador); 
+                   }else if($var->type == 1){    
+                     sprintf(threeAddress + strlen(threeAddress), "scanf $%d \n",aux1->registrador); 
+                   }
+                //    else{
+                //      sprintf(threeAddress + strlen(threeAddress), "scani $%d \n",aux1->registrador);       
+                //    }
+                }
         }
         | write_commands OPEN_PAREN error CLS_PAREN SEMICOLON {
                 $$ = buildNode("SINTATIC ERR!", 10);
@@ -418,13 +453,26 @@ iteration_expr:
             newScope->parentScope = activeScope; 
             activeScope = newScope;
             
-        } assign SEMICOLON expr SEMICOLON assign CLS_PAREN simple_complex_block_stmt {     
+        } assign SEMICOLON {
+             threeAddress = alocar_memoria(threeAddress);
+             sprintf(threeAddress + strlen(threeAddress), "FOR: \n");
+        } expr SEMICOLON {
+             threeAddress = alocar_memoria(threeAddress);
+             sprintf(threeAddress + strlen(threeAddress), "brz ENDFOR, $%d \n", $expr->registrador);   
+             // brz FIMFOR, $3 // i < 10
+        } assign CLS_PAREN simple_complex_block_stmt {     
              $$ = buildNode("for", 99);
-             $$->childNode = $4;
-             $4->brotherNode = $6;
-             $6->brotherNode = $8;
-             $8->brotherNode = $10;  
 
+             $$->childNode = $4;
+             $4->brotherNode = $7;
+             $7->brotherNode = $10;
+             $10->brotherNode = $12;  
+             
+             threeAddress = alocar_memoria(threeAddress);
+             sprintf(threeAddress + strlen(threeAddress), "jump FOR \n");
+             
+             threeAddress = alocar_memoria(threeAddress);
+             sprintf(threeAddress + strlen(threeAddress), "ENDFOR: \n");
              // fecha o Scopo
              showScope(activeScope);
              Scope *auxScope = activeScope->parentScope;
@@ -435,15 +483,14 @@ iteration_expr:
 
 condition_expr: 
         CMD_IF OPEN_PAREN expr CLS_PAREN {
-            // novo Scopo
-            //     char* scopeName;
-            //     scopeName = malloc(sizeof(activeScope->scopeName)+21);
-            //     strcpy(scopeName, "Block IF from Scope: ");
-            //     strcat(scopeName, activeScope->scopeName);
-            
             Scope *newScope = buildScope("Block IF ");
             newScope->parentScope = activeScope; 
+            newScope->jump = jumpReg;
             activeScope = newScope;
+
+            threeAddress = alocar_memoria(threeAddress);
+            sprintf(threeAddress + strlen(threeAddress), "brz L%d, $%d\n", newScope->jump, $3->registrador);
+            jumpReg = jumpReg+1;
         } block_cond {
                 $$ = buildNode("if", 99);
                 $$->childNode = $3;
@@ -462,12 +509,27 @@ condition_expr:
 ;
 
 block_cond:
-        simple_complex_block_stmt %prec THEN 
+        simple_complex_block_stmt {
+                
+                threeAddress = alocar_memoria(threeAddress);
+                sprintf(threeAddress + strlen(threeAddress), "L%d: \n", activeScope->jump);
+                
+                //printf("AQQUI x L%d: \n",activeScope->jump);
+        } %prec THEN 
         | simple_complex_block_stmt CMD_ELSE {
-            // novo Scopo    
+            // novo Scopo   
+            threeAddress = alocar_memoria(threeAddress);
+            sprintf(threeAddress + strlen(threeAddress), "jump L%d \n", jumpReg); 
+            
             Scope *newScope = buildScope("Block ELSE");
             newScope->parentScope = activeScope; 
+            newScope->jump = jumpReg;
             activeScope = newScope;
+            
+            jumpReg = jumpReg+1;
+
+            threeAddress = alocar_memoria(threeAddress);
+            sprintf(threeAddress + strlen(threeAddress), "L%d: \n", activeScope->parentScope->jump); 
 
         } simple_complex_block_stmt {
                 $$ = buildNode("if_stmt", 99);
@@ -475,7 +537,9 @@ block_cond:
 
                 $$->brotherNode = buildNode("else", 99);
                 $$->brotherNode->childNode = $4;
-
+                
+                threeAddress = alocar_memoria(threeAddress);
+                sprintf(threeAddress + strlen(threeAddress), "L%d: \n", activeScope->jump);
                 // fecha o Scopo
                 showScope(activeScope);
                 Scope *auxScope = activeScope->parentScope;
@@ -613,9 +677,9 @@ expr:
 assign:
         var ATRIBUTION expr {
 
-              if(strcmp($3->value,"EMPTY") == 0){
-                printf("EMPTYYYYY %d %d \n",$1->type, $3->type);
-              }  
+        //       if(strcmp($3->value,"EMPTY") == 0){
+        //         printf("EMPTYYYYY %d %d \n",$1->type, $3->type);
+        //       }  
               int undeclr;
               undeclr = verifyUnDeclaration(activeScope, $var->value, line, column);
               if(undeclr == 0){
@@ -628,7 +692,7 @@ assign:
                 char* cast;
                 cast = castToSpecificType($1->type, $3->type);
                 if(strcmp(cast,"Cast Error!") == 0){
-                     printf(" 2 ERRRRROOOOOOOOOO NO castToSpecificType! \n");   
+                     //printf(" 2 ERRRRROOOOOOOOOO NO castToSpecificType! \n");   
                      globalError = globalError + 1;    
                 }  
                 $1->brotherNode = buildNode(cast, $1->type);
@@ -637,13 +701,22 @@ assign:
                 $1->brotherNode = $3;
               }
               
-              Symbol *auxVar = findItem(activeScope, $var->value);
-              if(auxVar != NULL){
-                threeAddress = alocar_memoria(threeAddress);
-	        sprintf(threeAddress + strlen(threeAddress), "mov $%d, $%d // var %s = %s \n", auxVar->registrador, $expr->registrador, $var->value, $expr->value);
-                $var->registrador = auxVar->registrador;
-                $var->regis_tipo = "$";
-              }
+                Symbol *auxVar = findItem(activeScope, $var->value);
+                if(auxVar != NULL){
+                  threeAddress = alocar_memoria(threeAddress);
+                  if($expr->registrador == -1){   
+                    Symbol *auxExpr = findItem(activeScope, $expr->value); 
+                    if(auxExpr != NULL){
+                      sprintf(threeAddress + strlen(threeAddress), "mov $%d, $%d // var %s = %s \n", auxVar->registrador, auxExpr->registrador, $var->value, $expr->value);        
+                    }
+                  }else{
+	             sprintf(threeAddress + strlen(threeAddress), "mov $%d, $%d // var %s = %s \n", auxVar->registrador, $expr->registrador, $var->value, $expr->value);
+                  }   
+                  
+                  $var->registrador = auxVar->registrador;
+                  $var->regis_tipo = "$";
+                }
+              
         }
 ;
 
@@ -764,6 +837,10 @@ op_or_expr:
                 sprintf(threeAddress + strlen(threeAddress), "and $%d, $%d, $%d //  %s &&  %s  \n", registrador, $1->registrador, $3->registrador, $1->value, $3->value);
               }   
 
+              $$->registrador = registrador;
+              $$->regis_tipo = "$"; 
+              registrador = registrador+1;      
+
 
         }
         | op_and_expr 
@@ -839,25 +916,57 @@ logical_expr:
                         
                 threeAddress = alocar_memoria(threeAddress);
                 if(aux1 != NULL && aux3 != NULL){
-                        sprintf(threeAddress + strlen(threeAddress), logical_ops_tac($2->value), registrador, aux1->registrador, aux3->registrador, $1->value, $3->value);
+                        if(strcmp($2->value, "GTE_OP") == 0 || strcmp($2->value, "GT_OP") == 0 ){
+                           sprintf(threeAddress + strlen(threeAddress), logical_ops_tac($2->value), registrador, aux3->registrador, aux1->registrador, $1->value, $3->value);
+                        }else if(strcmp($2->value, "NEQ_OP") == 0 ){
+                           sprintf(threeAddress + strlen(threeAddress), logical_ops_tac($2->value), registrador, aux1->registrador, aux3->registrador, $1->value, $3->value);
+                           threeAddress = alocar_memoria(threeAddress);
+                           sprintf(threeAddress + strlen(threeAddress), "not $%d, $%d \n", registrador, registrador);
+                        }else{
+                           sprintf(threeAddress + strlen(threeAddress), logical_ops_tac($2->value), registrador, aux1->registrador, aux3->registrador, $1->value, $3->value);
+                        }
                 } 
 
               }else if($1->registrador == -1 && $3->registrador != -1){  
                 Symbol *aux1 = findItem(activeScope, $1->value); 
                 threeAddress = alocar_memoria(threeAddress);  
                 if(aux1 != NULL){
-                        sprintf(threeAddress + strlen(threeAddress), logical_ops_tac($2->value), registrador, aux1->registrador, $3->registrador, $1->value, $3->value);
+                        if(strcmp($2->value, "GTE_OP") == 0 || strcmp($2->value, "GT_OP") == 0 ){
+                           sprintf(threeAddress + strlen(threeAddress), logical_ops_tac($2->value), registrador, $3->registrador, aux1->registrador, $1->value, $3->value);
+                        }else if(strcmp($2->value, "NEQ_OP") == 0 ){
+                           sprintf(threeAddress + strlen(threeAddress), logical_ops_tac($2->value), registrador, aux1->registrador, $3->registrador, $1->value, $3->value);
+                           threeAddress = alocar_memoria(threeAddress);
+                           sprintf(threeAddress + strlen(threeAddress), "not $%d, $%d \n", registrador, registrador);     
+                        }else{
+                           sprintf(threeAddress + strlen(threeAddress), logical_ops_tac($2->value), registrador, aux1->registrador, $3->registrador, $1->value, $3->value);
+                        }
                 }
 
               }else if($1->registrador != -1 && $3->registrador == -1){
                 Symbol *aux3 = findItem(activeScope, $1->value); 
                 threeAddress = alocar_memoria(threeAddress);  
                 if(aux3 != NULL){
-                        sprintf(threeAddress + strlen(threeAddress), logical_ops_tac($2->value), registrador, $1->registrador, aux3->registrador, $1->value, $3->value);
+                        if(strcmp($2->value, "GTE_OP") == 0 || strcmp($2->value, "GT_OP") == 0 ){
+                          sprintf(threeAddress + strlen(threeAddress), logical_ops_tac($2->value), registrador, $1->registrador, aux3->registrador, $1->value, $3->value);
+                        }else if(strcmp($2->value, "NEQ_OP") == 0 ){
+                           sprintf(threeAddress + strlen(threeAddress), logical_ops_tac($2->value), registrador, aux3->registrador, $1->registrador, $1->value, $3->value);     
+                           threeAddress = alocar_memoria(threeAddress);
+                           sprintf(threeAddress + strlen(threeAddress), "not $%d, $%d \n", registrador, registrador);     
+                        }else{
+                          sprintf(threeAddress + strlen(threeAddress), logical_ops_tac($2->value), registrador, aux3->registrador, $1->registrador, $1->value, $3->value);
+                        }
                 }     
               }else {
-                threeAddress = alocar_memoria(threeAddress);      
-                sprintf(threeAddress + strlen(threeAddress), logical_ops_tac($2->value), registrador, $1->registrador, $3->registrador, $1->value, $3->value);
+                threeAddress = alocar_memoria(threeAddress);
+                if(strcmp($2->value, "GTE_OP") == 0 || strcmp($2->value, "GT_OP") == 0 ){      
+                        sprintf(threeAddress + strlen(threeAddress), logical_ops_tac($2->value), registrador, $3->registrador, $1->registrador, $1->value, $3->value);
+                }else if(strcmp($2->value, "NEQ_OP") == 0 ){
+                        sprintf(threeAddress + strlen(threeAddress), logical_ops_tac($2->value), registrador, $1->registrador, $3->registrador, $1->value, $3->value);
+                        threeAddress = alocar_memoria(threeAddress);
+                        sprintf(threeAddress + strlen(threeAddress), "not $%d, $%d \n", registrador, registrador);
+                }else{
+                        sprintf(threeAddress + strlen(threeAddress), logical_ops_tac($2->value), registrador, $1->registrador, $3->registrador, $1->value, $3->value);
+                }
               }
 
               $2->registrador = registrador;
@@ -981,7 +1090,6 @@ mult_expr:
               if($1->registrador == -1 && $3->registrador == -1){
                 Symbol *aux1 = findItem(activeScope, $1->value);
                 Symbol *aux3 = findItem(activeScope, $3->value);
-                printf(" %s mul \n",$2->value);
                 if(aux1 != NULL && aux3 != NULL){
                         threeAddress = alocar_memoria(threeAddress);
                         if(strcmp($2->value, "*") == 0){
@@ -1032,7 +1140,7 @@ mult_expr:
                     char* cast;
                     cast = castType($1->type, $3->type);
                     if(strcmp(cast, "Cast Error!") == 0){
-                        printf("5 ERRRRROOOOOOOOOO NO castType");   
+                        // printf("5 ERRRRROOOOOOOOOO NO castType");   
                         globalError = globalError + 1;    
                     }    
                     $2->childNode = buildNode(cast, typeNodo($1->type, $3->type));
@@ -1043,7 +1151,7 @@ mult_expr:
                     char* cast;
                     cast = castType($1->type, $3->type);
                     if(strcmp(cast,"Cast Error!") == 0){
-                        printf("6 ERRRRROOOOOOOOOO NO castType");   
+                        // printf("6 ERRRRROOOOOOOOOO NO castType");   
                         globalError = globalError + 1;    
                     }  
                     $1->brotherNode = buildNode(cast, typeNodo($1->type, $3->type));
@@ -1070,6 +1178,15 @@ first_term:
               $$ = $1;
               $1->type = $term->type;
               $1->childNode = $2;
+
+              if(strcmp($1->value,"-") == 0){
+                threeAddress = alocar_memoria(threeAddress);
+                sprintf(threeAddress + strlen(threeAddress), "minus $%d, $%d // - %s \n", registrador,  $2->registrador, $2->value);
+                $1->registrador = registrador;
+                $1->regis_tipo = "$"; 
+                registrador = registrador + 1; 
+                  
+              }  
         }
         | var OPEN_PAREN list_expr CLS_PAREN {
                 int funcDeclr;
@@ -1084,11 +1201,13 @@ first_term:
                 threeAddress = alocar_memoria(threeAddress);
                 sprintf(threeAddress + strlen(threeAddress), "pop $%d // pop \n", registrador);
 
-                registrador = registrador + 1;
-                numListArgs = 0;
                 $$ = $1;
                 $1->type = $3->type;
                 $1->brotherNode = $3;
+                $1->registrador = registrador;
+
+                registrador = registrador + 1;
+                numListArgs = 0;
         }
         | var OPEN_PAREN CLS_PAREN {
                 int funcDeclr;
@@ -1126,7 +1245,13 @@ term:
                 $$ = $2;
         }
         | EMPTY {
-              $$ = buildNode("EMPTY 2", 2);
+              $$ = buildNode("EMPTY", 2);
+              $$->registrador = registrador;
+              $$->regis_tipo = "$";
+
+              threeAddress = alocar_memoria(threeAddress);
+	      sprintf(threeAddress + strlen(threeAddress), "mov $%d, 0  // empty \n", registrador);
+              registrador = registrador + 1;
         }
         | OPEN_PAREN error  CLS_PAREN {
                 $$ = buildNode("SINTATIC ERR!", 10);
@@ -1167,6 +1292,16 @@ str_expr:
 char_expr:
         CHARACTER {
             $$ = buildNode($1, 99);
+            table = alocar_memoria(table);
+            char* s;
+            s = $1;
+            for (int i = 0; s[i] != '\0'; i++) {
+                if (s[i] == '\'') {
+                    s[i] = '"';
+                }
+            }
+            sprintf(table + strlen(table), " char str_char%d[]=%s \n", registrador, s);
+            $$->registrador = registrador;
             free($1);
         }
 ;
